@@ -1,7 +1,7 @@
 import React from "react";
-import { ExportCommand, InputCommand } from "./command";
-import { MainMenu } from "./command/mainMenu";
-import { Command, Router, Switch } from "./components";
+import { ExportCommand, InputCommand } from "./cli/command";
+import { MainMenu } from "./cli/command/mainMenu";
+import { Command, Router, Switch } from "./cli/components";
 
 export const App = () => {
     return (

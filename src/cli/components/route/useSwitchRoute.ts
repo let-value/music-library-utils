@@ -1,7 +1,7 @@
-import { Command } from "commander";
-import { useContext, useRef } from "react";
-import { useForceUpdate } from "../../utils/useForceUpdate";
-import { RouteContext } from "./RouteContext";
+import { Command } from 'commander';
+import { useContext, useRef } from 'react';
+import { useForceUpdate } from '../../../utils/useForceUpdate';
+import { RouteContext } from './RouteContext';
 
 export function useSwitchRoute(program: Command) {
     const parentState = useContext(RouteContext);
