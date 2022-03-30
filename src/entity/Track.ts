@@ -1,25 +1,25 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Track {
     @PrimaryGeneratedColumn()
-    Id: number;
+    Id!: number;
 
     @Column()
-    Name: string;
+    Name!: string;
 
     @Column()
-    Artist: string;
+    Artist!: string;
 
     @Column()
-    Album: string;
+    Album!: string;
 
     @Column()
-    Playlist: string;
+    Playlist!: string;
 
     @Column()
-    Type: string;
+    Type!: string;
 
     @Column()
-    ISRC: string;
+    ISRC!: string;
 }

@@ -3,7 +3,7 @@ import React, { FC, useContext } from "react";
 import { RouteContext } from "./RouteContext";
 
 export const HelpPage: FC = () => {
-    const { program } = useContext(RouteContext);
+    const { command: program } = useContext(RouteContext);
 
     return <Text>{program?.helpInformation()}</Text>;
 };
