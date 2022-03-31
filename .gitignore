@@ -10,3 +10,4 @@ lib_test
 build/
 tmp/
 temp/
+*.sqlite3
