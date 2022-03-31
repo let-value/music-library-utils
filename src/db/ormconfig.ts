@@ -1,14 +1,16 @@
 import "reflect-metadata";
-import { DataSource } from "typeorm";
+import { DataSource, DataSourceOptions } from "typeorm";
 import * as entities from "./entity";
 
-const source = new DataSource({
+export const options: DataSourceOptions = {
     type: "sqlite",
     database: "storage.sqlite3",
-    logging: true,
+    logging: "all",
     entities: Array.from(Object.values(entities)),
     migrationsTableName: "migrations",
-    migrations: ["src/db/migrations/*.ts"],
-});
+    migrations: [__dirname + "/migrations/*"],
+};
 
-export default source;
+const dataSource = new DataSource(options);
+
+export default dataSource;

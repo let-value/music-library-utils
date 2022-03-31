@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Album } from "./Album.entity";
 import { Artist } from "./Artist.entity";
 import { Playlist } from "./Playlist.entity";
@@ -11,15 +11,21 @@ export class Track {
     @Column()
     Name!: string;
 
-    @ManyToOne(() => Artist, (artist) => artist.Tracks)
+    @ManyToOne(() => Artist, (artist) => artist.Tracks, { cascade: true, eager: true })
+    @JoinTable()
     Artist!: Artist;
 
-    @ManyToOne(() => Album, (album) => album.Tracks)
-    Album!: Album;
+    @ManyToOne(() => Album, (album) => album.Tracks, { eager: true, nullable: true })
+    @JoinTable()
+    Album?: Album;
 
     @ManyToMany(() => Playlist, (playlist) => playlist.Tracks)
-    Playlist!: Playlist[];
+    Playlist!: Promise<Playlist[]>;
 
-    @Column()
-    ISRC!: string;
+    @Column({ nullable: true })
+    ISRC?: string;
+
+    constructor(params?: Partial<Track>) {
+        Object.assign(this, params);
+    }
 }

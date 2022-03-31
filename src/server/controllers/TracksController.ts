@@ -1,9 +1,25 @@
-import { Controller, Get } from "routing-controllers";
+import { Controller, Get, Post } from "routing-controllers";
+import { Service } from "typedi";
+import { DataBase, DataSource } from "../../db/DataBase";
+import { Artist, Track } from "../../db/entity";
 
-@Controller()
+@Controller("/tracks")
+@Service()
 export class TracksController {
-    @Get("/tracks")
-    getAll() {
-        return "This action returns all tracks";
+    constructor(@DataBase() private dataSource: DataSource) {}
+
+    @Get()
+    async getAll() {
+        const tracks = await this.dataSource.getRepository(Track).createQueryBuilder("track").getMany();
+        return JSON.stringify(tracks);
+    }
+
+    @Post()
+    async createTrack() {
+        const result = await this.dataSource
+            .getRepository(Track)
+            .save(new Track({ Name: "track", Artist: new Artist({ Name: "artist" }) }));
+
+        return JSON.stringify(result);
     }
 }

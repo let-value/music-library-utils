@@ -10,9 +10,13 @@ export class Album {
     @Column()
     Name!: string;
 
-    @ManyToOne(() => Artist, (artist) => artist.Albums)
+    @ManyToOne(() => Artist, (artist) => artist.Albums, { eager: true })
     Artist!: Artist;
 
-    @OneToMany(() => Track, (track) => track.Playlist)
-    Tracks!: Track[];
+    @OneToMany(() => Track, (track) => track.Album)
+    Tracks!: Promise<Track[]>;
+
+    constructor(name: string) {
+        this.Name = name;
+    }
 }

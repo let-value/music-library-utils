@@ -1,4 +1,5 @@
 import express from "express";
+import expressOasGenerator, { SPEC_OUTPUT_FILE_BEHAVIOR } from "express-oas-generator";
 import http from "http";
 import httpProxy from "http-proxy";
 import { useExpressServer as addControllers } from "routing-controllers";
@@ -8,6 +9,13 @@ export function createServer() {
     const app = express();
     const proxy = httpProxy.createProxyServer({ target: "http://localhost:3000/dev", ws: true });
     const server = http.createServer(app);
+
+    expressOasGenerator.handleResponses(app, {
+        specOutputPath: "api-spec.json",
+        specOutputFileBehavior: SPEC_OUTPUT_FILE_BEHAVIOR.RECREATE,
+        alwaysServeDocs: true,
+        swaggerDocumentOptions: {},
+    });
 
     app.use("/dev", function (req, res) {
         proxy.web(req, res, {});
@@ -25,5 +33,7 @@ export function createServer() {
         proxy.ws(req, socket, head);
     });
 
-    return app.listen(0);
+    expressOasGenerator.handleRequests();
+
+    return app.listen(5000);
 }

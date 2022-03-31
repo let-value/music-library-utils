@@ -9,7 +9,11 @@ export class Playlist {
     @Column()
     Name!: string;
 
-    @ManyToMany(() => Track, (track) => track.Playlist)
+    @ManyToMany(() => Track, (track) => track.Playlist, { eager: true })
     @JoinTable()
     Tracks!: Track[];
+
+    constructor(name: string) {
+        this.Name = name;
+    }
 }

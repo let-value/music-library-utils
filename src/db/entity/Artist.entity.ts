@@ -8,8 +8,12 @@ export class Artist {
     Name!: string;
 
     @OneToMany(() => Album, (album) => album.Artist)
-    Albums!: Album[];
+    Albums!: Promise<Album[]>;
 
     @OneToMany(() => Track, (track) => track.Artist)
-    Tracks!: Track[];
+    Tracks!: Promise<Track[]>;
+
+    constructor(params?: Partial<Artist>) {
+        Object.assign(this, params);
+    }
 }
