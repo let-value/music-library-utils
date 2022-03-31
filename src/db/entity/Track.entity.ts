@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Album } from "./Album.entity";
 import { Artist } from "./Artist.entity";
 import { Playlist } from "./Playlist.entity";
@@ -11,10 +11,10 @@ export class Track {
     @Column()
     Name!: string;
 
-    @OneToMany(() => Artist, (artist) => artist.Tracks)
+    @ManyToOne(() => Artist, (artist) => artist.Tracks)
     Artist!: Artist;
 
-    @OneToMany(() => Album, (album) => album.Tracks)
+    @ManyToOne(() => Album, (album) => album.Tracks)
     Album!: Album;
 
     @ManyToMany(() => Playlist, (playlist) => playlist.Tracks)
