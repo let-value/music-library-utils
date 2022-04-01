@@ -1,8 +1,8 @@
 import { Command as CommanderCommand } from "commander";
 import React, { FC, ReactElement, useMemo } from "react";
+import { CommandContext } from "./CommandContext";
 import { ComponentWithCommand } from "./ComponentWithCommand";
-import { RouteContext } from "./RouteContext";
-import { useRoute } from "./useSwitchRoute";
+import { useChildCommand } from "./useChildCommand";
 
 export interface CommandProps {
     command?: CommanderCommand;
@@ -16,20 +16,9 @@ export const Command: FC<CommandProps> = (props) => {
         return { command, component };
     }, [props]);
 
-    const { path, parentState, handlePath } = useRoute(command);
+    const state = useChildCommand(command);
 
-    return (
-        <RouteContext.Provider
-            value={{
-                ...parentState,
-                path: path.current,
-                command,
-                setPath: handlePath,
-            }}
-        >
-            {component}
-        </RouteContext.Provider>
-    );
+    return <CommandContext.Provider value={state}>{component}</CommandContext.Provider>;
 };
 
 export function getComponentCommand(props: CommandProps) {

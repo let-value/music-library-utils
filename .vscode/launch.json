@@ -8,11 +8,12 @@
             "type": "node",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceRoot}/lib/src/index.js",
+            "program": "${workspaceRoot}/dist/src/index.js",
             "cwd": "${workspaceRoot}",
             "sourceMaps": true,
             "preLaunchTask": "build",
-            "outFiles": ["${workspaceRoot}/lib/src/**/*.js"]
+            "outFiles": ["${workspaceRoot}/dist/src/**/*.js"],
+            "args": ["ui"]
         },
         {
             "type": "node",

@@ -1,14 +1,15 @@
 import { Command } from "commander";
 import { Server } from "http";
-import { Box, Newline, Text } from "ink";
+import { Box, Text } from "ink";
 import Link from "ink-link";
 import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
-import React, { useEffect, useMemo, useState } from "react";
-import { ComponentWithCommand } from "../components";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ComponentWithCommand, useNavigation } from "../components";
 import { createServer } from "../server/server";
 
 const UICommand: ComponentWithCommand = () => {
+    const { goBack } = useNavigation();
     const [server, setServer] = useState<Server>();
 
     const address = useMemo(() => {
@@ -21,19 +22,23 @@ const UICommand: ComponentWithCommand = () => {
 
     useEffect(() => {
         const server = createServer();
-        setServer(server);
+
+        (async () => {
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            setServer(server);
+        })();
 
         return () => {
             server.close();
         };
     }, []);
 
-    const handleBack = () => {
-        console.log(server);
-    };
+    const handleBack = useCallback(() => {
+        goBack();
+    }, [goBack]);
 
     return (
-        <Box>
+        <Box flexDirection="column">
             {address ? (
                 <Text>
                     Application:{" "}
@@ -44,13 +49,12 @@ const UICommand: ComponentWithCommand = () => {
             ) : (
                 <Text>
                     <Text color="green">
-                        <Spinner type="dots" />
+                        <Spinner type="dots" />{" "}
                     </Text>
                     Server starting
                 </Text>
             )}
-            <Newline />
-            <Newline />
+            <Text> </Text>
             <SelectInput items={[{ key: "back", label: "Go back", value: undefined }]} onSelect={handleBack} />
         </Box>
     );

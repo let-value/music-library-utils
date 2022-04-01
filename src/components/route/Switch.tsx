@@ -1,11 +1,11 @@
 import { Command, Option } from "commander";
-import React, { FC, ReactElement, useMemo } from "react";
+import React, { FC, ReactElement, useCallback, useMemo, useRef } from "react";
 import flattenChildren from "react-keyed-flatten-children";
 import { CommandProps, getComponentCommand } from "./Command";
+import { CommandContext } from "./CommandContext";
 import { ComponentWithCommand } from "./ComponentWithCommand";
 import { HelpPage } from "./HelpPage";
-import { RouteContext } from "./RouteContext";
-import { useRoute } from "./useSwitchRoute";
+import { useChildCommand } from "./useChildCommand";
 
 type Element = ReactElement<CommandProps, ComponentWithCommand>;
 
@@ -18,7 +18,7 @@ export const Switch: FC<SwitchProps> = (props) => {
     const { help, children } = props;
     const childCommands = useMemo(() => new Map<string, Element>(), []);
 
-    const command = useMemo(() => {
+    let command = useMemo(() => {
         const { command = new Command(), component } = getComponentCommand(props);
 
         command.helpOption(false);
@@ -31,47 +31,58 @@ export const Switch: FC<SwitchProps> = (props) => {
         return command;
     }, [childCommands, help, props]);
 
-    const { path, parentState, handleInvoke, handlePath, parseCommands } = useRoute(command);
+    const state = useChildCommand(command);
+
+    const { parent, name, setName } = state;
+
+    const handleInvoke = useCallback(
+        (_: unknown, activeCommand: Command) => {
+            setName(activeCommand.name());
+        },
+        [setName]
+    );
+
+    command = useMemo(() => {
+        if (parent?.command && !parent?.command.commands.includes(command)) {
+            parent.command.addCommand(command);
+        }
+
+        return command.action(handleInvoke);
+    }, [command, handleInvoke, parent?.command]);
 
     const flatChildren = useMemo(() => flattenChildren(children) as Element[], [children]);
 
     for (const element of flatChildren) {
-        const { command: childCommand, component } = getComponentCommand(element.props);
+        const { command: childCommand } = getComponentCommand(element.props);
 
         const name = childCommand?.name();
         if (name && childCommand && !childCommands.has(name)) {
-            childCommand.action(handleInvoke.bind(undefined, childCommand));
+            childCommand.action(handleInvoke);
 
             command.addCommand(childCommand);
-            childCommands.set(name, component);
+            childCommands.set(name, element);
         }
     }
 
-    parseCommands();
+    const parsed = useRef(false);
+    if (!parsed.current) {
+        const parseArgs: Parameters<Command["parse"]> = command.args?.length
+            ? [command.args, { from: "user" }]
+            : [undefined, undefined];
+        command.parse(...parseArgs);
+        parsed.current = true;
+    }
 
     const options = command.opts();
     let child = null;
 
-    if (childCommands.has(path.current)) {
-        child = childCommands.get(path.current);
+    if (childCommands.has(name)) {
+        child = childCommands.get(name);
     }
 
     if (help && (options.help || child == null)) {
         child = <HelpPage />;
     }
 
-    console.log(path, childCommands.keys());
-
-    return (
-        <RouteContext.Provider
-            value={{
-                ...parentState,
-                path: path.current,
-                command,
-                setPath: handlePath,
-            }}
-        >
-            {child}
-        </RouteContext.Provider>
-    );
+    return <CommandContext.Provider value={state}>{child}</CommandContext.Provider>;
 };
