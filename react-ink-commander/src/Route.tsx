@@ -1,27 +1,32 @@
-import { Command as CommanderCommand } from "commander";
-import React, { FC, ReactElement, useMemo } from "react";
+import { Command } from "commander";
+import React, { cloneElement, FC, ReactElement, useMemo } from "react";
 import { CommandContext } from "./CommandContext";
 import { ComponentWithCommand } from "./ComponentWithCommand";
 import { useChildCommand } from "./useChildCommand";
 
-export interface CommandProps {
-    command?: CommanderCommand;
+export interface RouteProps {
+    command?: Command;
     component?: ComponentWithCommand;
     element?: ReactElement<unknown, ComponentWithCommand>;
 }
 
-export const Command: FC<CommandProps> = (props) => {
-    const { command, component } = useMemo(() => {
-        const { command = new CommanderCommand().helpOption(false), component } = getComponentCommand(props);
-        return { command, component };
-    }, [props]);
+const Route: FC<RouteProps> = (props) => {
+    const { command, component } = useMemo(() => getRouteCommand(props), [props]);
 
     const state = useChildCommand(command);
 
-    return <CommandContext.Provider value={state}>{component}</CommandContext.Provider>;
+    const options = useMemo(() => state.command.opts(), [state.command]);
+
+    return (
+        <CommandContext.Provider value={state}>{cloneElement(component, { command, options })}</CommandContext.Provider>
+    );
 };
 
-export function getComponentCommand(props: CommandProps) {
+Route.displayName = "Route";
+
+export { Route };
+
+export function getRouteCommand(props: RouteProps) {
     const { command: commandProp, component: componentProp, element } = props;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const Component = componentProp!;

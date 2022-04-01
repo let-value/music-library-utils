@@ -10,7 +10,7 @@ interface CommandMenuProps {
 }
 
 export const CommandMenu: FC<CommandMenuProps> = ({ program, onSelect }) => {
-    const items = program.commands.map(command => ({ key: command.name(), label: command.name(), value: command }));
+    const items = program.commands.map((command) => ({ key: command.name(), label: command.name(), value: command }));
     const handleSelect = (option: Item<Command>) => {
         onSelect(option.value);
     };

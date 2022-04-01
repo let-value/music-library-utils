@@ -6,11 +6,15 @@
         },
         {
             "path": "frontend"
+        },
+        {
+            "path": "react-ink-commander"
         }
     ],
     "settings": {
         "files.exclude": {
-            "frontend": false
+            "frontend": true,
+            "react-ink-commander": true
         }
     }
 }

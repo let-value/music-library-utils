@@ -1,8 +1,8 @@
 import { Command } from "commander";
-import { createContext } from "react";
+import { createContext, MutableRefObject } from "react";
 
 export interface CommandState {
-    name: string;
+    name: MutableRefObject<string>;
     command: Command;
     setName(path: string): void;
     parent?: CommandState;

@@ -8,4 +8,7 @@ module.exports = {
     ],
     parser: "@typescript-eslint/parser",
     plugins: ["jsdoc", "prefer-arrow", "unicorn", "import", "react", "@typescript-eslint"],
+    rules: {
+        "react/prop-types": "off",
+    },
 };

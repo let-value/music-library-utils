@@ -1,45 +1,54 @@
-import { Command, Option } from "commander";
+import { Command, Option, OptionValues } from "commander";
 import React, { FC, ReactElement, useCallback, useMemo, useRef } from "react";
 import flattenChildren from "react-keyed-flatten-children";
-import { CommandProps, getComponentCommand } from "./Command";
 import { CommandContext } from "./CommandContext";
 import { ComponentWithCommand } from "./ComponentWithCommand";
 import { HelpPage } from "./HelpPage";
+import { getRouteCommand, RouteProps } from "./Route";
 import { useChildCommand } from "./useChildCommand";
 
-type Element = ReactElement<CommandProps, ComponentWithCommand>;
+type Element = ReactElement<RouteProps, ComponentWithCommand>;
 
-export interface SwitchProps extends CommandProps {
+export interface SwitchProps extends RouteProps {
     help?: boolean;
     children: Element | Element[];
 }
 
-export const Switch: FC<SwitchProps> = (props) => {
+const Switch: FC<SwitchProps> = (props) => {
+    let isError = false;
+
     const { help, children } = props;
     const childCommands = useMemo(() => new Map<string, Element>(), []);
 
-    let command = useMemo(() => {
-        const { command = new Command(), component } = getComponentCommand(props);
+    const handleError = useCallback(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        isError = true;
+    }, []);
 
-        command.helpOption(false);
+    let command = useMemo(() => {
+        const { command, component } = getRouteCommand(props);
+
+        command.helpOption(false).showSuggestionAfterError().exitOverride(handleError);
         if (help) {
-            command.addOption(new Option("-h, --help", "Show help information"));
+            command
+                .addOption(new Option("-h, --help", "Show help information"))
+                .showHelpAfterError("(use --help for additional information)");
         }
 
         childCommands.set(command.name(), component);
 
         return command;
-    }, [childCommands, help, props]);
+    }, [childCommands, handleError, help, props]);
 
     const state = useChildCommand(command);
 
-    const { parent, name, setName } = state;
+    const { parent, name } = state;
 
     const handleInvoke = useCallback(
         (_: unknown, activeCommand: Command) => {
-            setName(activeCommand.name());
+            name.current = activeCommand.name();
         },
-        [setName]
+        [name]
     );
 
     command = useMemo(() => {
@@ -53,7 +62,7 @@ export const Switch: FC<SwitchProps> = (props) => {
     const flatChildren = useMemo(() => flattenChildren(children) as Element[], [children]);
 
     for (const element of flatChildren) {
-        const { command: childCommand } = getComponentCommand(element.props);
+        const { command: childCommand } = getRouteCommand(element.props);
 
         const name = childCommand?.name();
         if (name && childCommand && !childCommands.has(name)) {
@@ -69,20 +78,40 @@ export const Switch: FC<SwitchProps> = (props) => {
         const parseArgs: Parameters<Command["parse"]> = command.args?.length
             ? [command.args, { from: "user" }]
             : [undefined, undefined];
-        command.parse(...parseArgs);
-        parsed.current = true;
+
+        try {
+            command.parse(...parseArgs);
+        } catch {
+            isError = true;
+        } finally {
+            parsed.current = true;
+        }
     }
 
-    const options = command.opts();
+    let options: OptionValues | undefined = undefined;
+    try {
+        options = command.opts();
+    } catch {
+        isError = true;
+    }
+
     let child = null;
 
-    if (childCommands.has(name)) {
-        child = childCommands.get(name);
+    if (!isError && childCommands.has(name.current)) {
+        child = childCommands.get(name.current);
     }
 
-    if (help && (options.help || child == null)) {
+    if (!child) {
+        isError = true;
+    }
+
+    if (isError || (help && options?.help)) {
         child = <HelpPage />;
     }
 
     return <CommandContext.Provider value={state}>{child}</CommandContext.Provider>;
 };
+
+Switch.displayName = "Switch";
+
+export { Switch };

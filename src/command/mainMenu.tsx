@@ -3,9 +3,8 @@ import { useApp } from "ink";
 import SelectInput from "ink-select-input";
 import { Item } from "ink-select-input/build/SelectInput";
 import React, { useCallback, useMemo } from "react";
+import { ComponentWithCommand, useNavigation } from "react-ink-commander";
 import project from "../../package.json";
-import { ComponentWithCommand } from "../components";
-import { useNavigation } from "../components/";
 
 type MenuCommand = "exit";
 

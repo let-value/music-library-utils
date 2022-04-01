@@ -1,15 +1,15 @@
-import { Command as CommanderCommand } from "commander";
+import { Command } from "commander";
 import { Text } from "ink";
 import React from "react";
-import { Command, ComponentWithCommand, Switch } from "../components";
+import { ComponentWithCommand, Route, Switch } from "react-ink-commander";
 import { ExportCommand } from "./export";
 
-const command = new CommanderCommand("import").description("Import command");
+const command = new Command("import").description("Import command");
 
-const InputCommand: ComponentWithCommand = () => {
+const InputCommand: ComponentWithCommand = ({ command, options }) => {
     return (
-        <Switch command={command} element={<Text>input command</Text>}>
-            <Command key="export" element={<ExportCommand />} />
+        <Switch command={command} element={<Text>{JSON.stringify(options)}</Text>}>
+            <Route key="export" element={<ExportCommand />} />
         </Switch>
     );
 };

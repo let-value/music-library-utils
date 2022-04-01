@@ -4,8 +4,9 @@ import { Box, Text } from "ink";
 import Link from "ink-link";
 import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
+import { AddressInfo } from "net";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ComponentWithCommand, useNavigation } from "../components";
+import { ComponentWithCommand, useNavigation } from "react-ink-commander";
 import { createServer } from "../server/server";
 
 const UICommand: ComponentWithCommand = () => {
@@ -16,7 +17,7 @@ const UICommand: ComponentWithCommand = () => {
         if (!server) {
             return undefined;
         }
-        const address = server?.address() as any;
+        const address = server?.address() as AddressInfo;
         return `http://localhost:${address.port}/`;
     }, [server]);
 
