@@ -1,10 +1,16 @@
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import React, { cloneElement, FC, ReactElement, useMemo } from "react";
 import { CommandContext } from "./CommandContext";
 import { ComponentWithCommand } from "./ComponentWithCommand";
+import { HelpPage } from "./HelpPage";
 import { useChildCommand } from "./useChildCommand";
 
+type CommandWithHelp = Command & { helpInjected?: boolean };
+
 export interface RouteProps {
+    enablePositionalOptions?: boolean;
+    passThroughOptions?: boolean;
+    help?: boolean;
     command?: Command;
     component?: ComponentWithCommand;
     element?: ReactElement<unknown, ComponentWithCommand>;
@@ -17,9 +23,15 @@ const Route: FC<RouteProps> = (props) => {
 
     const options = useMemo(() => state.command.opts(), [state.command]);
 
-    return (
-        <CommandContext.Provider value={state}>{cloneElement(component, { command, options })}</CommandContext.Provider>
-    );
+    let child = null;
+
+    if (props.help && options.help) {
+        child = <HelpPage />;
+    } else {
+        child = cloneElement(component, { command, options });
+    }
+
+    return <CommandContext.Provider value={state}>{child}</CommandContext.Provider>;
 };
 
 Route.displayName = "Route";
@@ -27,11 +39,30 @@ Route.displayName = "Route";
 export { Route };
 
 export function getRouteCommand(props: RouteProps) {
-    const { command: commandProp, component: componentProp, element } = props;
+    const {
+        command: commandProp,
+        component: componentProp,
+        element,
+        help,
+        enablePositionalOptions,
+        passThroughOptions,
+    } = props;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const Component = componentProp!;
-    const command = commandProp ?? Component?.command ?? element?.type?.command;
+    let command = commandProp ?? Component?.command ?? element?.type?.command;
     const component = element ?? <Component />;
+
+    command = command
+        .enablePositionalOptions(enablePositionalOptions)
+        .passThroughOptions(passThroughOptions)
+        .helpOption(false)
+        .showSuggestionAfterError(true)
+        .showHelpAfterError("(add --help for additional information)");
+
+    if (help && !(command as CommandWithHelp).helpInjected) {
+        (command as CommandWithHelp).helpInjected = true;
+        command = command.addOption(new Option("-h, --help", "Show help information"));
+    }
 
     return { command, component };
 }

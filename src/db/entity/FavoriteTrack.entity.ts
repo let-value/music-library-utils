@@ -2,7 +2,7 @@ import { Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Track } from "./Track.entity";
 
 @Entity()
-export class Favorite {
+export class FavoriteTrack {
     @PrimaryGeneratedColumn()
     Id!: number;
 

@@ -4,9 +4,10 @@ import { options } from "./ormconfig";
 
 export { DataSource };
 
+const value = new DataSource(options);
+
 export function DataBase() {
     return function (object: Constructable<unknown>, propertyName: string, index?: number) {
-        const value = new DataSource(options);
         value.initialize();
 
         Container.registerHandler({ object, propertyName, index, value: () => value });
