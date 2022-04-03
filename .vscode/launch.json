@@ -10,10 +10,11 @@
             "name": "Debug",
             "program": "${workspaceRoot}/dist/src/index.js",
             "cwd": "${workspaceRoot}",
+
             "sourceMaps": true,
             "preLaunchTask": "build",
             "outFiles": ["${workspaceRoot}/dist/src/**/*.js"],
-            "args": ["--help"]
+            "args": ["import", "csv", "--path", "${workspaceRoot}/test/test.csv"]
         },
         {
             "type": "node",

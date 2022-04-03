@@ -8,25 +8,32 @@ import { ImportCSVCommand } from "./providers/import";
 
 const providers: ComponentWithCommand[] = [ImportCSVCommand];
 const providerArgument = new Argument("[provider]", "Transfer provider").choices(
-    providers.map((provider) => {
-        const command = provider.command;
-        return command.name();
-    })
+    providers
+        .map((provider) => {
+            const command = provider.command;
+            return command?.name() ?? "";
+        })
+        .filter(Boolean)
 );
 const command = new Command("import").description("Import to library").addArgument(providerArgument);
 
 const ImportCommand: ComponentWithCommand = ({ command }) => {
     const { goBack } = useNavigation();
 
+    const [providerArg, ...otherArgs] = command?.args ?? [];
+
     const [provider, setProvider] = useState<ComponentWithCommand | undefined>(() => {
-        const provider = providers.find((provider) => provider.command.name() === command?.processedArgs[0]);
+        const provider = providers.find((provider) => provider.command?.name() === providerArg);
         return provider;
     });
 
     const items = useMemo(() => {
         const result: Item<ComponentWithCommand | "back">[] = [];
         for (const provider of providers) {
-            const command = provider.command.name();
+            const command = provider.command?.name();
+            if (!command) {
+                continue;
+            }
             result.push({ key: command, label: command, value: provider });
         }
         result.push({ key: "back", label: "Back", value: "back" });
@@ -58,8 +65,8 @@ const ImportCommand: ComponentWithCommand = ({ command }) => {
                     </Box>
                     <SelectInput items={items} onSelect={handleSelect} />
                 </>
-            ) : undefined}
-            {Provider ? () => <Route element={<Provider />} /> : undefined}
+            ) : null}
+            {Provider ? <Route help args={otherArgs} component={Provider} /> : null}
         </Box>
     );
 };

@@ -9,12 +9,16 @@
         },
         {
             "path": "react-ink-commander"
+        },
+        {
+            "path": "ink-search-select"
         }
     ],
     "settings": {
         "files.exclude": {
             "frontend": true,
-            "react-ink-commander": true
+            "react-ink-commander": true,
+            "ink-search-select": true
         }
     }
 }

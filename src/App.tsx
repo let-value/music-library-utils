@@ -7,7 +7,7 @@ import { MainMenu } from "./command/mainMenu";
 export const App = () => {
     return (
         <Box flexDirection="column">
-            <Text>{MainMenu.command.name()}</Text>
+            <Text>{MainMenu.command?.name()}</Text>
             <CommandRouter>
                 <Switch enablePositionalOptions help element={<MainMenu />}>
                     <Route key="import" passThroughOptions help element={<ImportCommand />} />

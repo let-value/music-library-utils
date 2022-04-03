@@ -3,6 +3,7 @@ import { FC } from "react";
 
 export interface CommandComponentProps {
     command?: Command;
+    args?: string[];
     options?: OptionValues;
 }
 

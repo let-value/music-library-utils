@@ -1,4 +1,4 @@
 interface IProvider {
-    import(): Promise<void>;
-    export(): Promise<void>;
+    import(abort: AbortSignal): Promise<void>;
+    export(abort: AbortSignal): Promise<void>;
 }

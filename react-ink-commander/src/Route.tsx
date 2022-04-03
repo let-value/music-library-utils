@@ -14,9 +14,11 @@ export interface RouteProps {
     command?: Command;
     component?: ComponentWithCommand;
     element?: ReactElement<unknown, ComponentWithCommand>;
+    args?: string[];
 }
 
 const Route: FC<RouteProps> = (props) => {
+    const { args } = props;
     const { command, component } = useMemo(() => getRouteCommand(props), [props]);
 
     const state = useChildCommand(command);
@@ -28,7 +30,7 @@ const Route: FC<RouteProps> = (props) => {
     if (props.help && options.help) {
         child = <HelpPage />;
     } else {
-        child = cloneElement(component, { command, options });
+        child = cloneElement(component, { command, options, args });
     }
 
     return <CommandContext.Provider value={state}>{child}</CommandContext.Provider>;
