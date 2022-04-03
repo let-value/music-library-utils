@@ -24,6 +24,6 @@
         "react": "^17"
     },
     "dependencies": {
-        "react-keyed-flatten-children": "latest"
+        "react-keyed-flatten-children": "^1.3.0"
     }
 }

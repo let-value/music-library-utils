@@ -8,6 +8,7 @@ import { useChildCommand } from "./useChildCommand";
 type CommandWithHelp = Command & { helpInjected?: boolean };
 
 export interface RouteProps {
+    allowUnknownOption?: boolean;
     enablePositionalOptions?: boolean;
     passThroughOptions?: boolean;
     help?: boolean;
@@ -46,6 +47,7 @@ export function getRouteCommand(props: RouteProps) {
         component: componentProp,
         element,
         help,
+        allowUnknownOption,
         enablePositionalOptions,
         passThroughOptions,
     } = props;
@@ -55,6 +57,7 @@ export function getRouteCommand(props: RouteProps) {
     const component = element ?? <Component />;
 
     command = command
+        .allowUnknownOption(allowUnknownOption)
         .enablePositionalOptions(enablePositionalOptions)
         .passThroughOptions(passThroughOptions)
         .helpOption(false)

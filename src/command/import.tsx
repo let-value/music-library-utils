@@ -1,73 +1,16 @@
-import { Argument, Command } from "commander";
-import { Box, Text } from "ink";
-import SelectInput from "ink-select-input";
-import { Item } from "ink-select-input/build/SelectInput";
-import React, { useCallback, useMemo, useState } from "react";
-import { ComponentWithCommand, Route, useNavigation } from "react-ink-commander";
+import { Command } from "commander";
+import React from "react";
+import { ComponentWithCommand, Route, Switch } from "react-ink-commander";
+import { CommandMenu } from "../components";
 import { ImportCSVCommand } from "./providers/import";
 
-const providers: ComponentWithCommand[] = [ImportCSVCommand];
-const providerArgument = new Argument("[provider]", "Transfer provider").choices(
-    providers
-        .map((provider) => {
-            const command = provider.command;
-            return command?.name() ?? "";
-        })
-        .filter(Boolean)
-);
-const command = new Command("import").description("Import to library").addArgument(providerArgument);
+const command = new Command("import").description("Import to library");
 
 const ImportCommand: ComponentWithCommand = ({ command }) => {
-    const { goBack } = useNavigation();
-
-    const [providerArg, ...otherArgs] = command?.args ?? [];
-
-    const [provider, setProvider] = useState<ComponentWithCommand | undefined>(() => {
-        const provider = providers.find((provider) => provider.command?.name() === providerArg);
-        return provider;
-    });
-
-    const items = useMemo(() => {
-        const result: Item<ComponentWithCommand | "back">[] = [];
-        for (const provider of providers) {
-            const command = provider.command?.name();
-            if (!command) {
-                continue;
-            }
-            result.push({ key: command, label: command, value: provider });
-        }
-        result.push({ key: "back", label: "Back", value: "back" });
-        return result;
-    }, []);
-
-    const handleSelect = useCallback(
-        (option: Item<ComponentWithCommand | "back">) => {
-            if (option.value == "back") {
-                goBack();
-            }
-
-            if (typeof option.value !== "string") {
-                setProvider(option.value);
-            }
-        },
-        [goBack]
-    );
-
-    const Provider = provider;
-
     return (
-        <Box flexDirection="column">
-            <Text>Import</Text>
-            {!provider ? (
-                <>
-                    <Box marginBottom={1}>
-                        <Text>Select provider:</Text>
-                    </Box>
-                    <SelectInput items={items} onSelect={handleSelect} />
-                </>
-            ) : null}
-            {Provider ? <Route help args={otherArgs} component={Provider} /> : null}
-        </Box>
+        <Switch help command={command} element={<CommandMenu back exit />}>
+            <Route key="csv" help element={<ImportCSVCommand />} />
+        </Switch>
     );
 };
 
