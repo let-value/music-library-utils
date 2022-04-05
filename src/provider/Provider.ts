@@ -4,9 +4,10 @@ import { Playlist, Track } from "../db/entity";
 
 export class Provider {
     constructor(public dataSource: DataSource) {}
-    getPlaylist = memoize((name = undefined) => {
+    getPlaylist = memoize(async (name = undefined) => {
         const playlistName = name ?? `Import ${new Date().toISOString()}`;
-        return new Playlist(playlistName);
+        const playlist = new Playlist(playlistName);
+        return await playlist.save();
     });
     saveTrack(track: Track) {
         return this.dataSource.getRepository(Track).save(track);

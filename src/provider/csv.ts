@@ -67,18 +67,28 @@ export class CSVProvider extends Provider {
     async importFile(stream: Readable, options: ParserOptionsArgs, properties?: HeadersConfig, abort?: AbortSignal) {
         const headers = properties ?? options.headers ? DEFAULT_HEADERS : undefined;
 
-        const parseTrack = (record: Record<string, string>): Track => {
+        const parseTrack = async (record: Record<string, string>): Promise<Track> => {
             const keys = Object.keys(record);
 
-            const getKey = (key: keyof HeadersConfig, number: number, required = false) => {
+            const getKey = (property: keyof HeadersConfig | string, number?: number, required = false) => {
                 let result = "";
-                if (headers) {
-                    result = keys.find((x) => x.includes(headers[key])) ?? "";
-                } else {
+
+                if (headers && property in headers) {
+                    const searchKey = headers[property as keyof HeadersConfig].toLowerCase();
+                    result = keys.find((key) => key.toLowerCase().includes(searchKey)) ?? "";
+                }
+
+                if (!result || !headers || !(property in headers)) {
+                    const searchKey = property.toLowerCase();
+                    result = keys.find((key) => key.toLowerCase().includes(searchKey)) ?? "";
+                }
+
+                if (!result && number != undefined) {
                     result = keys[number];
                 }
+
                 if (required && !result) {
-                    throw new Error(`Could not find ${key} column in ${keys}`);
+                    throw new Error(`Could not find ${property} column in ${keys}`);
                 }
 
                 return result;
@@ -96,27 +106,33 @@ export class CSVProvider extends Provider {
             if (albumKey && albumName) {
                 album = new Album(albumName);
                 album.Artist = artist;
+                album.artistName = artistName;
             }
 
-            //const playlistKey = getKey("playlist", 3);
-            //const playlistName = record[playlistKey];
-            //const playlist = this.getPlaylist(playlistName);
+            const playlistKey = getKey("playlist", 3);
+            const playlistName = record[playlistKey];
+            const playlist = await this.getPlaylist(playlistName);
+
+            const isrcKey = getKey("isrc", 0, true);
+            const isrc = record[isrcKey];
 
             return new Track({
                 Name: trackName,
+                artistName,
                 Artist: artist,
                 Albums: album ? [album] : undefined,
-                //Playlist: Promise.resolve([playlist]),
+                Playlist: Promise.resolve([playlist]),
+                ISRC: isrc,
             });
         };
 
         const callback = options.headers
-            ? (row: Record<string, string>) => {
-                  this.saveTrack(parseTrack(row));
+            ? async (row: Record<string, string>) => {
+                  this.saveTrack(await parseTrack(row));
               }
-            : (row: string[]) => {
+            : async (row: string[]) => {
                   const record = this.convertRowToRecord(row);
-                  this.saveTrack(parseTrack(record));
+                  this.saveTrack(await parseTrack(record));
               };
 
         const pipeline = new Readable({ signal: abort }).wrap(stream).pipe(parse(options)).on("data", callback);

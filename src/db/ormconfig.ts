@@ -8,6 +8,7 @@ export const options: DataSourceOptions = {
     entities: [__dirname + "/entity/**/*"],
     migrationsTableName: "migrations",
     migrations: [__dirname + "/migrations/**/*"],
+    migrationsRun: true,
 };
 
 const dataSource = new DataSource(options);
