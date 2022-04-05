@@ -1,25 +1,25 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryColumn } from "typeorm";
 import { Album } from "./Album.entity";
 import { Artist } from "./Artist.entity";
 import { Playlist } from "./Playlist.entity";
 
 @Entity()
 export class Track {
-    @PrimaryGeneratedColumn()
-    Id!: number;
-
-    @Column()
+    @PrimaryColumn()
     Name!: string;
 
+    @PrimaryColumn()
+    artistName!: string;
+
     @ManyToOne(() => Artist, (artist) => artist.Tracks, { cascade: true, eager: true })
-    @JoinTable()
+    @JoinColumn({ name: "artistName", referencedColumnName: "Name" })
     Artist!: Artist;
 
-    @ManyToOne(() => Album, (album) => album.Tracks, { eager: true, nullable: true })
+    @ManyToMany(() => Album, (album) => album.Tracks, { cascade: true, eager: true, nullable: true })
     @JoinTable()
-    Album?: Album;
+    Albums?: Album[];
 
-    @ManyToMany(() => Playlist, (playlist) => playlist.Tracks)
+    @ManyToMany(() => Playlist, (playlist) => playlist.Tracks, { cascade: true })
     Playlist!: Promise<Playlist[]>;
 
     @Column({ nullable: true })

@@ -1,16 +1,16 @@
 import { Argument, Command } from "commander";
 import { ParserOptionsArgs } from "fast-csv";
-import { Box } from "ink";
+import { Box, Text, useStdin } from "ink";
 import { Item } from "ink-search-select";
 import SelectInput from "ink-select-input";
 import Table from "ink-table";
 import { observer } from "mobx-react-lite";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ComponentWithCommand, useNavigation } from "react-ink-commander";
 import Container from "typedi";
 import { AskForValue, AskSelect } from "../../../components";
-import { CSVProvider, ProviderQuestion } from "../../../provider";
-import { useRefFn } from "../../../utils";
+import { CSVStore, ProviderQuestion } from "../../../provider";
+import { stdin, useRefFn } from "../../../utils";
 
 const pathArgument = new Argument("[path]", "Path to CSV file");
 const command = new Command("csv")
@@ -24,8 +24,13 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     const { goBack } = useNavigation();
 
     const abort = useRefFn(() => new AbortController());
-    const [provider] = useState(() => Container.get(CSVProvider));
+    const [provider] = useState(() => Container.get(CSVStore));
+
+    const { isRawModeSupported } = useStdin();
     const [path, setPath] = useState(initialPath);
+    const mode = useMemo(() => {
+        return isRawModeSupported ? "file" : "stdin";
+    }, [isRawModeSupported]);
 
     const options = command?.opts() as ParserOptionsArgs;
     const headers = provider.headers?.map((header) => ({ label: header, value: header })) ?? [];
@@ -52,12 +57,32 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     }, [goBack]);
 
     useEffect(() => {
-        if (path) {
-            provider.import(path, options, abort.current.signal);
-        }
-    }, [abort, command, options, path, provider]);
+        const controller = abort.current;
+        return () => {
+            controller?.abort();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    if (!path) {
+    useEffect(() => {
+        if (mode == "stdin") {
+            provider.importStream(stdin.rewind(), options, abort.current.signal);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [stdin, mode]);
+
+    useEffect(() => {
+        if (mode == "file" && path) {
+            provider.importFile(path, options, abort.current.signal);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [path, mode]);
+
+    if (!isRawModeSupported) {
+        return <Text>Importing...</Text>;
+    }
+
+    if (!path && mode == "file") {
         return <AskForValue label={pathArgument.description} onSubmit={handlePath} />;
     }
 

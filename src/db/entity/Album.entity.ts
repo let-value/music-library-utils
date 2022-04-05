@@ -1,19 +1,20 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryColumn } from "typeorm";
 import { Artist } from "./Artist.entity";
 import { Track } from "./Track.entity";
 
 @Entity()
 export class Album {
-    @PrimaryGeneratedColumn()
-    Id!: number;
-
-    @Column()
+    @PrimaryColumn()
     Name!: string;
 
-    @ManyToOne(() => Artist, (artist) => artist.Albums, { eager: true })
+    @PrimaryColumn()
+    artistName!: string;
+
+    @ManyToOne(() => Artist, (artist) => artist.Albums, { cascade: true, eager: true })
+    @JoinColumn({ name: "artistName" })
     Artist!: Artist;
 
-    @OneToMany(() => Track, (track) => track.Album)
+    @ManyToMany(() => Track, (track) => track.Albums)
     Tracks!: Promise<Track[]>;
 
     constructor(name: string) {

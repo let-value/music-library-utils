@@ -1,15 +1,8 @@
 import Container, { Constructable } from "typedi";
-import { DataSource } from "typeorm";
-import { options } from "./ormconfig";
-
-export { DataSource };
-
-const value = new DataSource(options);
+import database from "./ormconfig";
 
 export function DataBase() {
     return function (object: Constructable<unknown>, propertyName: string, index?: number) {
-        value.initialize();
-
-        Container.registerHandler({ object, propertyName, index, value: () => value });
+        Container.registerHandler({ object, propertyName, index, value: () => database });
     };
 }

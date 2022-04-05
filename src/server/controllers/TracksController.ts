@@ -1,6 +1,6 @@
 import { Controller, Get, Post } from "routing-controllers";
 import { Service } from "typedi";
-import { DataBase, DataSource } from "../../db/DataBase";
+import { DataBase, DataSource } from "../../db";
 import { Artist, Track } from "../../db/entity";
 
 @Controller("/tracks")
