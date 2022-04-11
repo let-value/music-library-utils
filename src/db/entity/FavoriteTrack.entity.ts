@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Track } from "./Track.entity";
 
 @Entity()
@@ -9,4 +9,7 @@ export class FavoriteTrack {
     @OneToOne(() => Track)
     @JoinColumn()
     Track!: Track;
+
+    @CreateDateColumn()
+    CreatedAt!: Date;
 }

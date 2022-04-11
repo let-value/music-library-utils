@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Artist } from "./Artist.entity";
 
 @Entity()
@@ -9,4 +9,7 @@ export class FavoriteArtist {
     @OneToOne(() => Artist)
     @JoinColumn()
     Artist!: Artist;
+
+    @CreateDateColumn()
+    CreatedAt!: Date;
 }
