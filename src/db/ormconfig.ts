@@ -1,16 +1,19 @@
 import "reflect-metadata";
-import { DataSource, DataSourceOptions } from "typeorm";
+import { DataSource } from "typeorm";
+import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 
-export const options: DataSourceOptions = {
+export const options: SqliteConnectionOptions = {
     type: "sqlite",
     database: "storage.sqlite3",
     logging: "all",
+    logger: "file",
     entities: [__dirname + "/entity/**/*"],
     migrationsTableName: "migrations",
     migrations: [__dirname + "/migrations/**/*"],
     migrationsRun: true,
+    cache: true,
 };
 
-const dataSource = new DataSource(options);
+const baseDataSource = new DataSource(options);
 
-export default dataSource;
+export default baseDataSource;

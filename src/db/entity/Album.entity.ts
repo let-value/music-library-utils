@@ -1,9 +1,9 @@
-import { Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryColumn } from "typeorm";
 import { Artist } from "./Artist.entity";
 import { Track } from "./Track.entity";
 
 @Entity()
-export class Album {
+export class Album extends BaseEntity {
     @PrimaryColumn()
     Name!: string;
 
@@ -14,10 +14,11 @@ export class Album {
     @JoinColumn({ name: "artistName" })
     Artist!: Artist;
 
-    @ManyToMany(() => Track, (track) => track.Albums)
-    Tracks!: Promise<Track[]>;
+    @ManyToMany(() => Track, (track) => track.Albums, { eager: true })
+    Tracks!: Track[];
 
-    constructor(name: string) {
-        this.Name = name;
+    constructor(params?: Partial<Album>) {
+        super();
+        Object.assign(this, params);
     }
 }

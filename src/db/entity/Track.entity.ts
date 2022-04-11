@@ -1,7 +1,17 @@
-import { BaseEntity, Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryColumn } from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    JoinColumn,
+    JoinTable,
+    ManyToMany,
+    ManyToOne,
+    OneToMany,
+    PrimaryColumn,
+} from "typeorm";
 import { Album } from "./Album.entity";
 import { Artist } from "./Artist.entity";
-import { Playlist } from "./Playlist.entity";
+import { PlaylistToTrack } from "./PlaylistToTrack.entity";
 
 @Entity()
 export class Track extends BaseEntity {
@@ -15,12 +25,12 @@ export class Track extends BaseEntity {
     @JoinColumn({ name: "artistName", referencedColumnName: "Name" })
     Artist!: Artist;
 
-    @ManyToMany(() => Album, (album) => album.Tracks, { cascade: true, eager: true, nullable: true })
+    @ManyToMany(() => Album, (album) => album.Tracks, { cascade: true, lazy: true, nullable: true })
     @JoinTable()
-    Albums?: Album[];
+    Albums?: Promise<Album[]>;
 
-    @ManyToMany(() => Playlist, (playlist) => playlist.Tracks)
-    Playlist!: Promise<Playlist[]>;
+    @OneToMany(() => PlaylistToTrack, (playlist_track) => playlist_track.Track, { cascade: true, lazy: true })
+    Playlists!: Promise<PlaylistToTrack[]>;
 
     @Column({ nullable: true })
     ISRC?: string;

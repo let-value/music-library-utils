@@ -1,5 +1,5 @@
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Track } from "./Track.entity";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { PlaylistToTrack } from "./PlaylistToTrack.entity";
 
 @Entity()
 export class Playlist extends BaseEntity {
@@ -9,9 +9,8 @@ export class Playlist extends BaseEntity {
     @Column()
     Name!: string;
 
-    @ManyToMany(() => Track, (track) => track.Playlist)
-    @JoinTable()
-    Tracks!: Promise<Track[]>;
+    @OneToMany(() => PlaylistToTrack, (playlist_track) => playlist_track.Playlist, { cascade: true, lazy: true })
+    Tracks!: Promise<PlaylistToTrack[]>;
 
     constructor(name: string) {
         super();

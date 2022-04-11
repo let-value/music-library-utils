@@ -18,7 +18,7 @@ export class TracksController {
     async createTrack() {
         const result = await this.dataSource
             .getRepository(Track)
-            .save(new Track({ Name: "track", Artist: new Artist({ Name: "artist" }) }));
+            .save(new Track({ Name: "track", Artist: new Artist("artist") }));
 
         return JSON.stringify(result);
     }

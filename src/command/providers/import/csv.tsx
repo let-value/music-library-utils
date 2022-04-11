@@ -3,14 +3,16 @@ import { ParserOptionsArgs } from "fast-csv";
 import { Box, Text, useStdin } from "ink";
 import { Item } from "ink-search-select";
 import SelectInput from "ink-select-input";
+import Spinner from "ink-spinner";
 import Table from "ink-table";
 import { observer } from "mobx-react-lite";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ComponentWithCommand, useNavigation } from "react-ink-commander";
 import Container from "typedi";
-import { AskForValue, AskSelect } from "../../../components";
-import { CSVStore, ProviderQuestion } from "../../../provider";
-import { stdin, useRefFn } from "../../../utils";
+import { AskForValue, AskSelect, TrackName } from "../../../components";
+import { ProviderQuestion } from "../../../provider";
+import { CSVStore } from "../../../store";
+import { useRefFn } from "../../../utils";
 
 const pathArgument = new Argument("[path]", "Path to CSV file");
 const command = new Command("csv")
@@ -26,11 +28,11 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     const abort = useRefFn(() => new AbortController());
     const [provider] = useState(() => Container.get(CSVStore));
 
-    const { isRawModeSupported } = useStdin();
+    const { stdin, isRawModeSupported } = useStdin();
     const [path, setPath] = useState(initialPath);
     const mode = useMemo(() => {
-        return isRawModeSupported ? "file" : "stdin";
-    }, [isRawModeSupported]);
+        return !isRawModeSupported && stdin ? "stdin" : "file";
+    }, [isRawModeSupported, stdin]);
 
     const options = command?.opts() as ParserOptionsArgs;
     const headers = provider.headers?.map((header) => ({ label: header, value: header })) ?? [];
@@ -65,8 +67,8 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     }, []);
 
     useEffect(() => {
-        if (mode == "stdin") {
-            provider.importStream(stdin.rewind(), options, abort.current.signal);
+        if (mode == "stdin" && stdin) {
+            provider.importStream(stdin, options, abort.current.signal);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stdin, mode]);
@@ -79,7 +81,18 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     }, [path, mode]);
 
     if (!isRawModeSupported) {
-        return <Text>Importing...</Text>;
+        return (
+            <Box flexDirection="column">
+                <Text>Reading CSV, format example:</Text>
+                <Table data={provider.preview} />
+                <Text>
+                    <Text color="green">
+                        <Spinner type="dots" />{" "}
+                    </Text>
+                    {provider.currentTrack ? <TrackName track={provider.currentTrack} /> : "Importing CSV"}
+                </Text>
+            </Box>
+        );
     }
 
     if (!path && mode == "file") {
@@ -101,6 +114,12 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
 
     return (
         <Box flexDirection="column">
+            <Text>
+                <Text color="green">
+                    <Spinner type="dots" />{" "}
+                </Text>
+                {provider.currentTrack ? <TrackName track={provider.currentTrack} /> : "Importing CSV"}
+            </Text>
             <SelectInput items={[{ key: "back", label: "Go back", value: undefined }]} onSelect={handleBack} />
         </Box>
     );

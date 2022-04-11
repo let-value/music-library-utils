@@ -45,6 +45,7 @@
     },
     "devDependencies": {
         "@parcel/transformer-typescript-types": "^2.4.1",
+        "@types/better-sqlite3": "^7.5.0",
         "@types/body-parser": "^1.19.2",
         "@types/copy": "^0.3.2",
         "@types/copyfiles": "^2.4.1",
@@ -132,7 +133,9 @@
         "routing-controllers": "^0.9.0",
         "sqlite": "^4.0.25",
         "sqlite3": "^5.0.2",
+        "typed-emitter": "^2.1.0",
         "typedi": "^0.10.0",
-        "typeorm": "^0.3.3"
+        "typeorm": "^0.3.3",
+        "better-sqlite3": "^7.5.1"
     }
 }
