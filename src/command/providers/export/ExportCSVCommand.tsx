@@ -1,5 +1,4 @@
 import { Argument, Command } from "commander";
-import { FormatterOptionsArgs } from "fast-csv";
 import { Box, useStdin, useStdout } from "ink";
 import SelectInput from "ink-select-input";
 import { Task, TaskList } from "ink-task-list";
@@ -8,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ComponentWithCommand, useNavigation } from "react-ink-commander";
 import Container from "typedi";
 import { AskForValue, formatTrackName } from "../../../components";
-import { CSVRow, ExportOptions } from "../../../provider";
+import { ExportOptions } from "../../../provider";
 import { CSVStore } from "../../../store";
 import { useRefFn } from "../../../utils";
 
@@ -19,6 +18,11 @@ const command = new Command("csv")
     .option("--headers", "Write headers", true)
     .option("--no-headers", "Write only data")
     .option("-l, --limit <count>", "Limit number of rows");
+
+interface Options {
+    headers?: boolean;
+    limit?: string;
+}
 
 const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) => {
     const { command, args } = props;
@@ -36,7 +40,14 @@ const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) =
         return !isRawModeSupported && stdout ? "stdin" : "file";
     }, [isRawModeSupported, stdout]);
 
-    const options = command?.opts() as FormatterOptionsArgs<CSVRow, CSVRow>;
+    const options = command?.opts<Options>() ?? {};
+
+    const parameters = useMemo((): ExportOptions => {
+        return {
+            ...props,
+            limit: options?.limit ? parseInt(options.limit) : undefined,
+        };
+    }, [options.limit, props]);
 
     const handlePath = useCallback((value) => {
         setPath(value);
@@ -56,14 +67,14 @@ const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) =
 
     useEffect(() => {
         if (mode == "stdin" && stdout) {
-            provider.exportStream(stdout, props as ExportOptions, options, abort.current.signal);
+            provider.exportStream(stdout, parameters, options, abort.current.signal);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stdout, mode]);
 
     useEffect(() => {
         if (mode == "file" && path) {
-            provider.exportFile(path, props as ExportOptions, options, abort.current.signal);
+            provider.exportFile(path, parameters, options, abort.current.signal);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [path, mode]);

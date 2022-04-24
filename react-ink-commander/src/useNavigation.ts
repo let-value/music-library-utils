@@ -15,8 +15,9 @@ export function useNavigation() {
     );
 
     const goBack = useCallback(() => {
+        command.parseAsync([]);
         parent?.setName(parent?.command?.name());
-    }, [parent]);
+    }, [command, parent]);
 
     return { commands, goToCommand, goBack };
 }

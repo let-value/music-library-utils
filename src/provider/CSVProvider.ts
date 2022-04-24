@@ -198,8 +198,8 @@ export class CSVProvider extends Provider {
 
             if (props.limit && counter == props.limit) {
                 counter = 0;
-                const newStream = requestStream.next().value;
-                if (!newStream) {
+                const stream = requestStream.next().value;
+                if (!stream) {
                     continue;
                 }
                 pipeline.end();

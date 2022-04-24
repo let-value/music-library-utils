@@ -58,17 +58,24 @@ export class CSVStore {
             this.askPlaylist.raise(),
         ]);
 
-        this.importResult = await this.csvProvider.importCSV(
+        const result = await this.csvProvider.importCSV(
             reReadable.rewind(),
             options,
             { artist, track, album, playlist },
             abort
         );
+
+        runInAction(() => {
+            this.importResult = result;
+        });
     }
 
     async importStream(stream: Readable, options: ParserOptionsArgs, abort: AbortSignal) {
         this.setPreview(Object.values(DEFAULT_HEADERS), Array(1).fill(DEFAULT_HEADERS));
-        this.importResult = await this.csvProvider.importCSV(stream, options, undefined, abort);
+        const result = await this.csvProvider.importCSV(stream, options, undefined, abort);
+        runInAction(() => {
+            this.importResult = result;
+        });
     }
 
     async exportFile(
@@ -80,20 +87,31 @@ export class CSVStore {
         const location = path.resolve("./", filePath);
 
         function* streamFabric() {
-            let index = 0;
+            let index = 1;
             while (true) {
                 let currentPath = location;
-                if (index > 0) {
-                    const extension = path.extname(currentPath);
-                    const fileName = path.basename(currentPath).replace(extension, "");
-                    currentPath = path.join(path.dirname(currentPath), `${fileName}_${index}${extension}`);
+                let extension = path.extname(currentPath);
+                let fileName = path.basename(currentPath).replace(extension, "");
+
+                if (!extension) {
+                    extension = ".csv";
                 }
+
+                if (index > 1) {
+                    fileName = `${fileName}_${index}`;
+                }
+
+                currentPath = path.join(path.dirname(currentPath), `${fileName}${extension}`);
                 yield fs.createWriteStream(currentPath);
                 index++;
             }
         }
 
-        this.exportResult = await this.csvProvider.exportCSV(streamFabric(), props, options, abort);
+        const result = await this.csvProvider.exportCSV(streamFabric(), props, options, abort);
+
+        runInAction(() => {
+            this.exportResult = result;
+        });
     }
 
     async exportStream(
@@ -105,6 +123,11 @@ export class CSVStore {
         function* fakeIterator() {
             yield stream;
         }
-        this.exportResult = await this.csvProvider.exportCSV(fakeIterator(), props, options, abort);
+
+        const result = await this.csvProvider.exportCSV(fakeIterator(), props, options, abort);
+
+        runInAction(() => {
+            this.exportResult = result;
+        });
     }
 }
