@@ -18,8 +18,8 @@ const pathArgument = new Argument("[path]", "Path to CSV file");
 const command = new Command("csv")
     .description("Import CSV file")
     .addArgument(pathArgument)
-    .option("--headers", "Use first line as headers", true)
-    .option("--no-headers", "Use first line as data");
+    .option("-p, --headers", "Use first line as headers", true)
+    .option("-d, --no-headers", "Use first line as data");
 
 const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     const initialPath = command?.processedArgs[0] ?? args?.[0];

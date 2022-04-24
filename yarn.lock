@@ -1446,6 +1446,20 @@
   dependencies:
     "@types/node" "*"
 
+"@types/ink-big-text@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@types/ink-big-text/-/ink-big-text-1.2.1.tgz#c8f5976097e1e9990c287bebe12f5c49c05d5770"
+  integrity sha512-2J+vxIcVzYkQrWfgqDorcui0ueF8g7j2BgQ+iYSsRkXi8/B3mSRM9fNL4jN3UOPWC2upfDssrumG2bOkRs6aXA==
+  dependencies:
+    "@types/react" "*"
+
+"@types/ink-gradient@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@types/ink-gradient/-/ink-gradient-2.0.1.tgz#950d0c0624b6ff1c85b91980a51ead73ddeb1795"
+  integrity sha512-itcg0raINFVyexBQJVRkPopt/CLgBnDsqUi1JC096WquiD0NEBuKhtVvbvPiqJbtAffMAmtiXU24a5xSS0r1og==
+  dependencies:
+    "@types/react" "*"
+
 "@types/ink-select-input@^3.0.1":
   version "3.0.1"
   resolved "https://registry.npmjs.org/@types/ink-select-input/-/ink-select-input-3.0.1.tgz"

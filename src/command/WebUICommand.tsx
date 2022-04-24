@@ -61,6 +61,6 @@ const WebUICommand: ComponentWithCommand = () => {
     );
 };
 
-WebUICommand.command = new Command("ui");
+WebUICommand.command = new Command("webui").description("Start web UI");
 
 export { WebUICommand };

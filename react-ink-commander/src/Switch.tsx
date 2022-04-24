@@ -36,7 +36,7 @@ const Switch: FC<SwitchProps> = ({ children, ...props }) => {
     );
 
     command = useMemo(() => {
-        if (parent?.command && !parent?.command.commands.includes(command)) {
+        if (parent?.command && !parent?.command.commands.some((x) => x.name() == command.name())) {
             parent.command.addCommand(command);
         }
 
@@ -52,7 +52,10 @@ const Switch: FC<SwitchProps> = ({ children, ...props }) => {
         if (name && childCommand && !childCommands.has(name)) {
             childCommand.action(handleInvoke.bind(undefined, childCommand));
 
-            command.addCommand(childCommand);
+            if (!command.commands.some((x) => x.name() == childCommand.name())) {
+                command.addCommand(childCommand);
+            }
+
             childCommands.set(name, element);
         }
     }

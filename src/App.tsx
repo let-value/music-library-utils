@@ -1,5 +1,7 @@
 import { Command } from "commander";
-import { Box, Text } from "ink";
+import { Box } from "ink";
+import BigText from "ink-big-text";
+import Gradient from "ink-gradient";
 import React from "react";
 import { CommandRouter, Route, Switch } from "react-ink-commander";
 import project from "../package.json";
@@ -12,7 +14,6 @@ export const App = () => {
     return (
         <DataBaseProvider>
             <Box flexDirection="column">
-                <Text>{command.name()}</Text>
                 <CommandRouter>
                     <Switch
                         help
@@ -20,7 +21,16 @@ export const App = () => {
                         enablePositionalOptions
                         passThroughOptions
                         command={command}
-                        element={<CommandMenu exit />}
+                        element={
+                            <CommandMenu
+                                title={
+                                    <Gradient name="morning">
+                                        <BigText font="tiny" text={command.name()} />
+                                    </Gradient>
+                                }
+                                exit
+                            />
+                        }
                     >
                         <Route key="import" element={<ImportCommand />} />
                         <Route key="export" element={<ExportCommand />} />
