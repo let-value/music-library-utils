@@ -3,13 +3,13 @@ import { ParserOptionsArgs } from "fast-csv";
 import { Box, Text, useStdin } from "ink";
 import { Item } from "ink-search-select";
 import SelectInput from "ink-select-input";
-import Spinner from "ink-spinner";
 import Table from "ink-table";
+import { Task, TaskList } from "ink-task-list";
 import { observer } from "mobx-react-lite";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ComponentWithCommand, useNavigation } from "react-ink-commander";
 import Container from "typedi";
-import { AskForValue, AskSelect, TrackName } from "../../../components";
+import { AskForValue, AskSelect, formatTrackName } from "../../../components";
 import { ProviderQuestion } from "../../../provider";
 import { CSVStore } from "../../../store";
 import { useRefFn } from "../../../utils";
@@ -80,17 +80,40 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [path, mode]);
 
+    const progress = (
+        <TaskList>
+            <Task
+                isExpanded={!!provider.importResult}
+                label="Importing CSV"
+                status={provider.currentTrack ? formatTrackName(provider.currentTrack) : undefined}
+                state={provider.importResult ? "success" : "loading"}
+            >
+                {provider.importResult ? (
+                    <>
+                        <Task label="Tracks" state="success" status={provider.importResult.tracks.length.toString()} />
+                        <Task
+                            label="Artists"
+                            state="success"
+                            status={provider.importResult.artists.length.toString()}
+                        />
+                        <Task label="Albums" state="success" status={provider.importResult.albums.length.toString()} />
+                        <Task
+                            label="Playlists"
+                            state="success"
+                            status={provider.importResult.playlists.length.toString()}
+                        />
+                    </>
+                ) : undefined}
+            </Task>
+        </TaskList>
+    );
+
     if (!isRawModeSupported) {
         return (
             <Box flexDirection="column">
                 <Text>Reading CSV, format example:</Text>
                 <Table data={provider.preview} />
-                <Text>
-                    <Text color="green">
-                        <Spinner type="dots" />{" "}
-                    </Text>
-                    {provider.currentTrack ? <TrackName track={provider.currentTrack} /> : "Importing CSV"}
-                </Text>
+                {progress}
             </Box>
         );
     }
@@ -114,12 +137,7 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
 
     return (
         <Box flexDirection="column">
-            <Text>
-                <Text color="green">
-                    <Spinner type="dots" />{" "}
-                </Text>
-                {provider.currentTrack ? <TrackName track={provider.currentTrack} /> : "Importing CSV"}
-            </Text>
+            {progress}
             <SelectInput items={[{ key: "back", label: "Go back", value: undefined }]} onSelect={handleBack} />
         </Box>
     );

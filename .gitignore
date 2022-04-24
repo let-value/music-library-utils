@@ -11,7 +11,7 @@ lib_test
 build/
 tmp/
 temp/
-test/test.csv
+test/
 *.sqlite3
 *.sqlite3-journal
 ormlogs.log

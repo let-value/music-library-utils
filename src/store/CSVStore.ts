@@ -1,12 +1,12 @@
-import { ParserOptionsArgs } from "fast-csv";
+import { FormatterOptionsArgs, ParserOptionsArgs } from "fast-csv";
 import * as fs from "fs";
 import { makeAutoObservable, runInAction } from "mobx";
 import * as path from "path";
 import { ReReadable } from "rereadable-stream";
-import { Readable } from "stream";
+import { Readable, Writable } from "stream";
 import { Inject, Service } from "typedi";
 import { Track } from "../db/entity";
-import { CSVProvider, DEFAULT_HEADERS, ProviderQuestion } from "../provider";
+import { CSVProvider, CSVRow, DEFAULT_HEADERS, ExportOptions, ProviderQuestion, TransferResult } from "../provider";
 
 @Service({
     transient: true,
@@ -15,6 +15,8 @@ export class CSVStore {
     headers: string[] = [];
     preview: Record<string, string>[] = [];
     currentTrack?: Track = undefined;
+    importResult?: TransferResult = undefined;
+    exportResult?: TransferResult = undefined;
 
     setPreview(headers: CSVStore["headers"], preview: CSVStore["preview"]) {
         this.headers = headers;
@@ -28,6 +30,7 @@ export class CSVStore {
 
     constructor(@Inject() private csvProvider: CSVProvider) {
         csvProvider.events.on("trackImport", this.handleCurrentTrack);
+        csvProvider.events.on("trackExport", this.handleCurrentTrack);
         csvProvider.events.on("end", this.handleEnd);
         makeAutoObservable(this);
     }
@@ -45,7 +48,7 @@ export class CSVStore {
         const location = path.resolve("./", filePath);
         const stream = fs.createReadStream(location);
         const reReadable = stream.pipe(new ReReadable());
-        const { headers, preview } = await this.csvProvider.getFilePreview(reReadable.rewind(), options, abort);
+        const { headers, preview } = await this.csvProvider.getCSVPreview(reReadable.rewind(), options, abort);
         this.setPreview(headers, preview);
 
         const [artist, track, album, playlist] = await Promise.all([
@@ -55,11 +58,53 @@ export class CSVStore {
             this.askPlaylist.raise(),
         ]);
 
-        return this.csvProvider.importFile(stream, options, { artist, track, album, playlist }, abort);
+        this.importResult = await this.csvProvider.importCSV(
+            reReadable.rewind(),
+            options,
+            { artist, track, album, playlist },
+            abort
+        );
     }
 
-    importStream(stream: Readable, options: ParserOptionsArgs, abort: AbortSignal) {
+    async importStream(stream: Readable, options: ParserOptionsArgs, abort: AbortSignal) {
         this.setPreview(Object.values(DEFAULT_HEADERS), Array(1).fill(DEFAULT_HEADERS));
-        return this.csvProvider.importFile(stream, options, undefined, abort);
+        this.importResult = await this.csvProvider.importCSV(stream, options, undefined, abort);
+    }
+
+    async exportFile(
+        filePath: string,
+        props: ExportOptions,
+        options: FormatterOptionsArgs<CSVRow, CSVRow>,
+        abort: AbortSignal
+    ) {
+        const location = path.resolve("./", filePath);
+
+        function* streamFabric() {
+            let index = 0;
+            while (true) {
+                let currentPath = location;
+                if (index > 0) {
+                    const extension = path.extname(currentPath);
+                    const fileName = path.basename(currentPath).replace(extension, "");
+                    currentPath = path.join(path.dirname(currentPath), `${fileName}_${index}${extension}`);
+                }
+                yield fs.createWriteStream(currentPath);
+                index++;
+            }
+        }
+
+        this.exportResult = await this.csvProvider.exportCSV(streamFabric(), props, options, abort);
+    }
+
+    async exportStream(
+        stream: Writable,
+        props: ExportOptions,
+        options: FormatterOptionsArgs<CSVRow, CSVRow>,
+        abort: AbortSignal
+    ) {
+        function* fakeIterator() {
+            yield stream;
+        }
+        this.exportResult = await this.csvProvider.exportCSV(fakeIterator(), props, options, abort);
     }
 }

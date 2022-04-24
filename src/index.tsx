@@ -4,12 +4,12 @@ import "reflect-metadata";
 import { useContainer as rcUseContainer } from "routing-controllers";
 import { Container } from "typedi";
 import { App } from "./App";
-import database from "./db/ormconfig";
+import { dataSource } from "./db/DataBase";
 
 rcUseContainer(Container);
 
 const { waitUntilExit } = render(<App />, {});
 waitUntilExit().then(() => {
-    database.destroy();
+    dataSource.destroy();
     console.log("Bye!");
 });

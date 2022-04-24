@@ -1,9 +1,9 @@
-import { parse, ParserOptionsArgs } from "fast-csv";
-import { Readable } from "stream";
+import { format, FormatterOptionsArgs, parse, ParserOptionsArgs } from "fast-csv";
+import { Readable, Writable } from "stream";
 import { Service } from "typedi";
 import { DataBase, DataSource } from "../db";
-import { Track } from "../db/entity";
-import { Provider } from "./Provider";
+import { Album, Artist, Playlist, Track } from "../db/entity";
+import { ExportOptions, ExportRecord, Provider, TransferResult } from "./Provider";
 
 type HeadersConfig = {
     artist: string;
@@ -19,11 +19,15 @@ export const DEFAULT_HEADERS: HeadersConfig = {
     playlist: "Playlist",
 };
 
+export type CSVRow = Partial<Record<keyof HeadersConfig, string>>;
+
 @Service({
     transient: true,
 })
 export class CSVProvider extends Provider {
-    headers: HeadersConfig | undefined;
+    headers?: HeadersConfig = undefined;
+    importResult?: TransferResult = undefined;
+
     constructor(@DataBase() dataSource: DataSource) {
         super(dataSource);
     }
@@ -32,7 +36,16 @@ export class CSVProvider extends Provider {
         return Object.fromEntries(row.map((value, index) => [`column${index + 1}`, value]));
     }
 
-    async getFilePreview(stream: Readable, options: ParserOptionsArgs, abort: AbortSignal) {
+    private convertRecordToRow({ track, album, playlist }: ExportRecord): CSVRow {
+        return {
+            track: track.Name,
+            artist: track.Artist.Name,
+            album: album?.Name ?? undefined,
+            playlist: playlist?.Name ?? undefined,
+        };
+    }
+
+    async getCSVPreview(stream: Readable, options: ParserOptionsArgs, abort: AbortSignal) {
         const headers = new Set<string>();
         const preview: Record<string, string>[] = [];
 
@@ -111,7 +124,7 @@ export class CSVProvider extends Provider {
         }
     }
 
-    async importFile(stream: Readable, options: ParserOptionsArgs, properties?: HeadersConfig, abort?: AbortSignal) {
+    async importCSV(stream: Readable, options: ParserOptionsArgs, properties?: HeadersConfig, abort?: AbortSignal) {
         this.headers = properties ?? options.headers ? DEFAULT_HEADERS : undefined;
 
         await this.beginImport(async () => {
@@ -133,6 +146,76 @@ export class CSVProvider extends Provider {
             });
 
             await Promise.all(trackTasks);
+
+            this.importResult = this.getResult();
         });
+
+        return this.importResult;
+    }
+
+    async exportCSV(
+        requestStream: Generator<Writable, void, unknown>,
+        props: ExportOptions,
+        options: FormatterOptionsArgs<CSVRow, CSVRow>,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _abort?: AbortSignal
+    ) {
+        let counter = 0;
+        const tracks = new Set<Track>();
+        const artist = new Set<Artist>();
+        const playlists = new Set<Playlist>();
+        const albums = new Set<Album>();
+
+        const stream = requestStream.next().value;
+
+        if (!stream) {
+            throw new Error("Supply at least one stream");
+        }
+
+        let pipeline = format(options);
+        //.pipe(new PassThrough({ signal: abort }))
+        pipeline.pipe(stream);
+
+        const generator = await this.getExportCollection(props);
+        const collection = generator();
+
+        for (const item of collection) {
+            tracks.add(item.track);
+            if (item.artist) {
+                artist.add(item.artist);
+            }
+            if (item.album) {
+                albums.add(item.album);
+            }
+            if (item.playlist) {
+                playlists.add(item.playlist);
+            }
+
+            const row = this.convertRecordToRow(item);
+            pipeline.write(row);
+
+            counter++;
+
+            if (props.limit && counter == props.limit) {
+                counter = 0;
+                const newStream = requestStream.next().value;
+                if (!newStream) {
+                    continue;
+                }
+                pipeline.end();
+                pipeline = format(options);
+                //.pipe(new PassThrough({ signal: abort }))
+                pipeline.pipe(stream);
+            }
+        }
+
+        pipeline.end();
+
+        return {
+            playlists: Array.from(playlists),
+            albums: Array.from(albums),
+            artists: Array.from(artist),
+            tracks: Array.from(tracks),
+        };
     }
 }

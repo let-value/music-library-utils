@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ComponentWithCommand, useNavigation } from "react-ink-commander";
 import { createServer } from "../server/server";
 
-const UICommand: ComponentWithCommand = () => {
+const WebUICommand: ComponentWithCommand = () => {
     const { goBack } = useNavigation();
     const [server, setServer] = useState<Server>();
 
@@ -61,6 +61,6 @@ const UICommand: ComponentWithCommand = () => {
     );
 };
 
-UICommand.command = new Command("ui");
+WebUICommand.command = new Command("ui");
 
-export { UICommand };
+export { WebUICommand };
