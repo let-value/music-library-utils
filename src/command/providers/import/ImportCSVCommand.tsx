@@ -31,7 +31,7 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     const { stdin, isRawModeSupported } = useStdin();
     const [path, setPath] = useState(initialPath);
     const mode = useMemo(() => {
-        return !isRawModeSupported && stdin ? "stdin" : "file";
+        return !isRawModeSupported && stdin ? "stream" : "file";
     }, [isRawModeSupported, stdin]);
 
     const options = command?.opts() as ParserOptionsArgs;
@@ -67,7 +67,7 @@ const ImportCSVCommand: ComponentWithCommand = observer(({ command, args }) => {
     }, []);
 
     useEffect(() => {
-        if (mode == "stdin" && stdin) {
+        if (mode == "stream" && stdin) {
             provider.importStream(stdin, options, abort.current.signal);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

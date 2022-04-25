@@ -1,5 +1,5 @@
 import { Argument, Command } from "commander";
-import { Box, useStdin, useStdout } from "ink";
+import { Box } from "ink";
 import SelectInput from "ink-select-input";
 import { Task, TaskList } from "ink-task-list";
 import { observer } from "mobx-react-lite";
@@ -33,12 +33,12 @@ const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) =
     const abort = useRefFn(() => new AbortController());
     const [provider] = useState(() => Container.get(CSVStore));
 
-    const { isRawModeSupported } = useStdin();
-    const { stdout } = useStdout();
+    const isRawModeSupported = useMemo(() => !!process.stdout?.isTTY, []);
+
     const [path, setPath] = useState(initialPath);
     const mode = useMemo(() => {
-        return !isRawModeSupported && stdout ? "stdin" : "file";
-    }, [isRawModeSupported, stdout]);
+        return !isRawModeSupported ? "stream" : "file";
+    }, [isRawModeSupported]);
 
     const options = command?.opts<Options>() ?? {};
 
@@ -66,11 +66,11 @@ const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) =
     }, []);
 
     useEffect(() => {
-        if (mode == "stdin" && stdout) {
-            provider.exportStream(stdout, parameters, options, abort.current.signal);
+        if (mode == "stream") {
+            provider.exportStream(process.stdout, parameters, options, abort.current.signal);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [stdout, mode]);
+    }, [mode]);
 
     useEffect(() => {
         if (mode == "file" && path) {

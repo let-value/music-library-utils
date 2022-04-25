@@ -44,6 +44,8 @@
         "package": "npm run frontend:build && npm run build && pkg ."
     },
     "devDependencies": {
+        "@types/ink-big-text": "^1.2.1",
+        "@types/ink-gradient": "^2.0.1",
         "@parcel/transformer-typescript-types": "^2.4.1",
         "@types/better-sqlite3": "^7.5.0",
         "@types/body-parser": "^1.19.2",
@@ -99,8 +101,6 @@
         "outputPath": "build"
     },
     "dependencies": {
-        "@types/ink-big-text": "^1.2.1",
-        "@types/ink-gradient": "^2.0.1",
         "better-sqlite3": "^7.5.1",
         "body-parser": "^1.19.2",
         "class-transformer": "^0.3.1",
@@ -127,6 +127,7 @@
         "mobx": "^6.5.0",
         "mobx-react-lite": "^3.3.0",
         "multer": "^1.4.4",
+        "noop-stream": "0.1.0",
         "pg": "^8.4.0",
         "react": "^17",
         "react-dom": "^17",

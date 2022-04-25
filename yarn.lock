@@ -6229,6 +6229,13 @@ noms@0.0.0:
     inherits "^2.0.1"
     readable-stream "~1.0.31"
 
+noop-stream@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/noop-stream/-/noop-stream-0.1.0.tgz#097b67a7d4d6598899b3e69f6ccf9623e203b235"
+  integrity sha512-GyQPM8zEoN9LADidd/DHLbIE8lOyNz+LrNyT9YQjGGu7KGPEvx9PvgRlWhXhvqcBAVKf/SI6k+RzNSy/QUmvZQ==
+  dependencies:
+    type-fest "^0.5.2"
+
 "nopt@2 || 3":
   version "3.0.6"
   resolved "https://registry.npmjs.org/nopt/-/nopt-3.0.6.tgz"
@@ -8420,6 +8427,11 @@ type-fest@^0.21.3:
   version "0.21.3"
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-0.21.3.tgz"
   integrity sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==
+
+type-fest@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.5.2.tgz#d6ef42a0356c6cd45f49485c3b6281fc148e48a2"
+  integrity sha512-DWkS49EQKVX//Tbupb9TFa19c7+MK1XmzkrZUR8TAktmE/DizXoaoJV6TZ/tSIPXipqNiRI6CyAe7x69Jb6RSw==
 
 type-fest@^0.6.0:
   version "0.6.0"
