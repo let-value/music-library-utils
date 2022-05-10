@@ -1,16 +1,15 @@
 import { Command } from "commander";
 import { Server } from "http";
-import { Box, Text } from "ink";
+import { Text } from "ink";
 import Link from "ink-link";
-import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
 import { AddressInfo } from "net";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ComponentWithCommand, useNavigation } from "react-ink-commander";
+import React, { useEffect, useMemo, useState } from "react";
+import { ComponentWithCommand } from "react-ink-commander";
+import { GoBack } from "../components";
 import { createServer } from "../server/server";
 
 const WebUICommand: ComponentWithCommand = () => {
-    const { goBack } = useNavigation();
     const [server, setServer] = useState<Server>();
 
     const address = useMemo(() => {
@@ -34,12 +33,8 @@ const WebUICommand: ComponentWithCommand = () => {
         };
     }, []);
 
-    const handleBack = useCallback(() => {
-        goBack();
-    }, [goBack]);
-
     return (
-        <Box flexDirection="column">
+        <GoBack>
             {address ? (
                 <Text>
                     Application:{" "}
@@ -56,8 +51,7 @@ const WebUICommand: ComponentWithCommand = () => {
                 </Text>
             )}
             <Text> </Text>
-            <SelectInput items={[{ key: "back", label: "Go back", value: undefined }]} onSelect={handleBack} />
-        </Box>
+        </GoBack>
     );
 };
 

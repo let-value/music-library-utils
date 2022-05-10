@@ -24,9 +24,7 @@ interface Options {
     limit?: string;
 }
 
-const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) => {
-    const { command, args } = props;
-
+const ExportCSVCommand = observer(({ command, args, ...other }) => {
     const initialPath = command?.processedArgs[0] ?? args?.[0];
     const { goBack } = useNavigation();
 
@@ -44,10 +42,10 @@ const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) =
 
     const parameters = useMemo((): ExportOptions => {
         return {
-            ...props,
+            ...other,
             limit: options?.limit ? parseInt(options.limit) : undefined,
         };
-    }, [options.limit, props]);
+    }, [options.limit, other]);
 
     const handlePath = useCallback((value) => {
         setPath(value);
@@ -121,7 +119,7 @@ const ExportCSVCommand: ComponentWithCommand<ExportOptions> = observer((props) =
             <SelectInput items={[{ key: "back", label: "Go back", value: undefined }]} onSelect={handleBack} />
         </Box>
     );
-}) as ComponentWithCommand;
+}) as ComponentWithCommand<ExportOptions>;
 
 ExportCSVCommand.command = command;
 
