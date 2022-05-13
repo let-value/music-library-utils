@@ -7,6 +7,9 @@ export enum LibraryFeature {
     favorite_tracks,
     favorite_albums,
     favorite_artists,
+    import_playlist,
+    edit_playlist,
+    remove_playlist,
 }
 
 export interface ILibrary {
@@ -16,7 +19,7 @@ export interface ILibrary {
 
 @Service()
 export class Library implements ILibrary {
-    features = [LibraryFeature.playlists];
+    features = [LibraryFeature.playlists, LibraryFeature.edit_playlist, LibraryFeature.remove_playlist];
     dataSource: DataSource;
     constructor(@DataBase() dataSource: DataSource) {
         this.dataSource = dataSource;

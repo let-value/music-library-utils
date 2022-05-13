@@ -6,7 +6,7 @@ import { Item } from "ink-select-input/build/SelectInput";
 import React, { FC, ReactNode, useCallback, useMemo } from "react";
 import { useNavigation } from "react-ink-commander";
 
-type MenuCommand = "exit" | "back";
+export type MenuCommand = "exit" | "back";
 
 interface CommandMenuProps {
     title?: ReactNode;
@@ -14,68 +14,87 @@ interface CommandMenuProps {
     back?: boolean;
 }
 
-const MenuCommandDescription: Record<MenuCommand, string> = {
+export const MenuCommandDescription: Record<MenuCommand, string> = {
     exit: "Exit application",
     back: "Go back to previous menu",
 };
 
-const CommandMenu: FC<CommandMenuProps> = ({ title, exit, back }) => {
-    const app = useApp();
-    const { commands, goToCommand, goBack } = useNavigation();
+export function useNavigationCommandMenuItems() {
+    const { commands } = useNavigation();
 
-    const items = useMemo(() => {
+    return useMemo(() => {
         let index = 0;
-        const result: Item<Command | MenuCommand>[] = [];
+        const result: Item<Command>[] = [];
 
         for (const command of commands) {
             result.push({ key: (index++).toString(), label: command.name(), value: command });
         }
+
+        return result;
+    }, [commands]);
+}
+
+export function useCommandMenu<TCommands extends MenuCommand | string>(
+    commands?: Item<Command | TCommands>[],
+    onSelect?: (option: Item<Command | TCommands>) => void,
+    { exit = false, back = false }: Partial<Record<MenuCommand, boolean>> = { exit: false, back: false }
+) {
+    const app = useApp();
+    const { goBack, goToCommand } = useNavigation();
+
+    const items = useMemo(() => {
+        const result: Item<Command | TCommands>[] = [...(commands ?? [])];
+
         if (back) {
-            result.push({ key: "back", label: "back", value: "back" });
+            result.push({ key: "back", label: "back", value: "back" as TCommands });
         }
         if (exit) {
-            result.push({ key: "exit", label: "exit", value: "exit" });
+            result.push({ key: "exit", label: "exit", value: "exit" as TCommands });
         }
         return result;
     }, [back, commands, exit]);
 
     const handleSelect = useCallback(
-        (option: Item<Command | MenuCommand>) => {
+        (option: Item<Command | TCommands>) => {
             if (option.value == "exit") {
                 app.exit();
-            }
-
-            if (option.value == "back") {
+            } else if (option.value == "back") {
                 goBack();
-            }
-
-            if (option.value instanceof Command) {
+            } else if (option.value instanceof Command) {
                 goToCommand(option.value);
+            } else {
+                onSelect?.(option);
             }
         },
-        [app, goBack, goToCommand]
+        [app, goBack, goToCommand, onSelect]
     );
 
-    const ItemComponent = useMemo(
-        (): FC<ItemProps> =>
-            function MenuItem({ isSelected, label }) {
-                const item = items.find((item) => item.label == label);
-                const description =
-                    item?.value instanceof Command
-                        ? item.value.description()
-                        : MenuCommandDescription[item?.value as MenuCommand];
+    return { items, handleSelect };
+}
 
-                const name = label.padEnd(17, " ");
+export const makeCommandMenuItemComponent = <TCommands extends MenuCommand | string>(
+    items: Item<Command | TCommands>[],
+    descriptions: Record<TCommands, string> = MenuCommandDescription as Record<string, string>
+): FC<ItemProps> =>
+    function MenuItem({ isSelected, label }) {
+        const item = items.find((item) => item.label == label);
+        const description =
+            item?.value instanceof Command ? item.value.description() : descriptions[item?.value as TCommands];
 
-                return (
-                    <Text>
-                        {isSelected ? <Gradient name="vice">{name}</Gradient> : name}
-                        {description}
-                    </Text>
-                );
-            },
-        [items]
-    );
+        const name = label.padEnd(17, " ");
+
+        return (
+            <Text>
+                {isSelected ? <Gradient name="vice">{name}</Gradient> : name}
+                {description}
+            </Text>
+        );
+    };
+
+const CommandMenu: FC<CommandMenuProps> = ({ title, exit, back }) => {
+    const commands = useNavigationCommandMenuItems();
+    const { items, handleSelect } = useCommandMenu(commands, undefined, { exit, back });
+    const ItemComponent = useMemo(() => makeCommandMenuItemComponent(items), [items]);
 
     return (
         <Box flexDirection="column">
