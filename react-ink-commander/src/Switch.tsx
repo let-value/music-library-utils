@@ -9,7 +9,7 @@ import { useChildCommand } from "./useChildCommand";
 type Element = ReactElement<RouteProps, ComponentWithCommand>;
 
 export interface SwitchProps extends RouteProps {
-    children?: Element | Element[];
+    children?: React.ReactNode;
 }
 
 const Switch: FC<SwitchProps> = ({ children, ...props }) => {

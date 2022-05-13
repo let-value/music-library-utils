@@ -10,7 +10,7 @@ import { SpotifyAuthServer, spotifyAuthServer, SpotifyProvider } from "../provid
 export class SpotifyStore {
     user?: SpotifyApi.CurrentUsersProfileResponse = undefined;
     authServer?: SpotifyAuthServer = undefined;
-    constructor(@Inject() private spotifyProvider: SpotifyProvider) {
+    constructor(@Inject() public provider: SpotifyProvider) {
         // csvProvider.events.on("trackImport", this.handleCurrentTrack);
         // csvProvider.events.on("trackExport", this.handleCurrentTrack);
         // csvProvider.events.on("end", this.handleEnd);
@@ -22,13 +22,13 @@ export class SpotifyStore {
 
     async init() {
         try {
-            this.user = await this.spotifyProvider.initClient();
+            this.user = await this.provider.initClient();
         } catch (e) {
             // eslint-disable-next-line no-debugger
             debugger;
             match(e)
                 .with({ name: "WebapiRegularError", statusCode: 401 }, async () => {
-                    await this.spotifyProvider.resetAccessToken();
+                    await this.provider.resetAccessToken();
                     await this.auth();
                     this.init();
                 })
@@ -47,7 +47,7 @@ export class SpotifyStore {
         await open(url);
         try {
             const code = await result;
-            await this.spotifyProvider.getAccessToken(code, redirectUrl);
+            await this.provider.getAccessToken(code, redirectUrl);
         } catch (e) {
             // eslint-disable-next-line no-debugger
             debugger;

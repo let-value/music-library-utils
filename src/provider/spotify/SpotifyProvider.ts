@@ -4,21 +4,25 @@ import { DataBase, DataSource } from "../../db";
 import { KeyValue } from "../../db/entity";
 import { Provider } from "../Provider";
 import { client_id, client_secret } from "./spotifyAuth";
+import { SpotifyLibrary } from "./SpotifyLibrary";
 
 @Service({
-    transient: true,
+    global: true,
 })
 export class SpotifyProvider extends Provider {
     accessToken?: string;
     refreshToken?: string;
     user?: SpotifyApi.CurrentUsersProfileResponse = undefined;
-    spotifyApi = new SpotifyWebApi({
-        clientId: client_id,
-        clientSecret: client_secret,
-    });
+    spotifyApi: SpotifyWebApi;
+    library: SpotifyLibrary;
 
     constructor(@DataBase() dataSource: DataSource) {
         super(dataSource);
+        this.spotifyApi = new SpotifyWebApi({
+            clientId: client_id,
+            clientSecret: client_secret,
+        });
+        this.library = new SpotifyLibrary(this.spotifyApi);
     }
 
     async initClient() {

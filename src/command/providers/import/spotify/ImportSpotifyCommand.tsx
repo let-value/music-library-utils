@@ -3,37 +3,37 @@ import { Box, Text } from "ink";
 import Link from "ink-link";
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
-import { ComponentWithCommand, Route, Switch } from "react-ink-commander";
+import { ComponentWithCommand } from "react-ink-commander";
 import Container from "typedi";
-import { CommandMenu, GoBack } from "../../../../components";
+import { GoBack } from "../../../../components";
 import { SpotifyStore } from "../../../../store";
-import { SpotifyBrowseCommand } from "./SpotifyBrowseCommand";
+import { Browse } from "../../../browse";
 import { SpotifyContext } from "./SpotifyContext";
 
 const command = new Command("spotify").description("Import from Spotify");
 
 const ImportSpotifyCommand = observer((_props) => {
-    const [provider] = useState(() => Container.get(SpotifyStore));
+    const [store] = useState(() => Container.get(SpotifyStore));
 
     useEffect(() => {
-        provider.init();
+        store.init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    if (provider.authServer) {
+    if (store.authServer) {
         return (
             <GoBack>
                 <Text>
                     Login url:{" "}
-                    <Link fallback={false} url={provider.authServer.url}>
-                        <Text color="green">{provider.authServer.url}</Text>
+                    <Link fallback={false} url={store.authServer.url}>
+                        <Text color="green">{store.authServer.url}</Text>
                     </Link>
                 </Text>
             </GoBack>
         );
     }
 
-    if (!provider.user) {
+    if (!store.user) {
         return (
             <GoBack>
                 <Text>Please login to Spotify</Text>
@@ -42,24 +42,16 @@ const ImportSpotifyCommand = observer((_props) => {
     }
 
     return (
-        <SpotifyContext.Provider value={provider}>
-            <Switch
-                command={command}
-                element={
-                    <CommandMenu
-                        title={
-                            <Box flexDirection="column" paddingX={1} borderStyle="round" borderColor="green">
-                                <Text bold>{provider.user.display_name} </Text>
-                                <Text>{provider.user.email}</Text>
-                            </Box>
-                        }
-                        back
-                        exit
-                    />
+        <SpotifyContext.Provider value={store}>
+            <Browse
+                title={
+                    <Box flexDirection="column" paddingX={1} borderStyle="round" borderColor="green">
+                        <Text bold>{store.user.display_name} </Text>
+                        <Text>{store.user.email}</Text>
+                    </Box>
                 }
-            >
-                <Route key="browse" component={SpotifyBrowseCommand} />
-            </Switch>
+                library={store.provider.library}
+            />
         </SpotifyContext.Provider>
     );
 }) as ComponentWithCommand;

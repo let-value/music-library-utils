@@ -19,5 +19,5 @@ export function useNavigation() {
         parent?.setName(parent?.command?.name());
     }, [command, parent]);
 
-    return { commands, goToCommand, goBack };
+    return { command, commands, goToCommand, goBack };
 }

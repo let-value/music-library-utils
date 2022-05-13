@@ -4,7 +4,7 @@ import http from "http";
 const port = 25584;
 export const client_id = "ece0642a5103498181e8dfcfa8feafa3";
 export const client_secret = "a167eb4b2b854ad487e99160b42b410e";
-const scope = "user-read-private, user-read-email";
+const scope = "user-read-private user-read-email user-library-read playlist-read-private user-follow-read";
 
 export interface SpotifyAuthServer {
     server: http.Server;

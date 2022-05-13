@@ -54,6 +54,7 @@ interface KeyPress {
 }
 
 export interface QuickSearchProps {
+    onEscape?: () => void;
     onSelect: (item: Item) => void;
     items: Item[];
     label?: string;
@@ -73,6 +74,7 @@ export const QuickSearch: FC<QuickSearchProps> = (props) => {
     const {
         items,
         onSelect,
+        onEscape,
         focus,
         clearQueryChars,
         limit,
@@ -222,6 +224,8 @@ export const QuickSearch: FC<QuickSearchProps> = (props) => {
         }
         if (clearQueryChars.indexOf(ch) !== -1) {
             setQuery("");
+        } else if (key.name === "escape") {
+            onEscape?.();
         } else if (key.name === "return") {
             onSelect(getValue());
         } else if (key.name === "backspace") {
@@ -256,7 +260,9 @@ export const QuickSearch: FC<QuickSearchProps> = (props) => {
                 </Status>
             </Box>
             {visibleItems.length === 0 ? (
-                <Box key="no-items-found">No matches</Box>
+                <Box key="no-items-found">
+                    <Text>No matches</Text>
+                </Box>
             ) : (
                 visibleItems.map((item) => {
                     const isSelected = matchingItems.indexOf(item) === windowIndices.selection;
