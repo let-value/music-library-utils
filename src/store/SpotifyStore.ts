@@ -24,8 +24,6 @@ export class SpotifyStore {
         try {
             this.user = await this.provider.initClient();
         } catch (e) {
-            // eslint-disable-next-line no-debugger
-            debugger;
             match(e)
                 .with({ name: "WebapiRegularError", statusCode: 401 }, async () => {
                     await this.provider.resetAccessToken();

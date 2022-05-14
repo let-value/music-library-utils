@@ -1,6 +1,6 @@
 import { Service } from "typedi";
 import { DataBase, DataSource } from "../db";
-import { Playlist } from "../db/entity";
+import { FavoriteTrack, ITrackRelation, Playlist } from "../db/entity";
 
 export enum LibraryFeature {
     playlists,
@@ -15,16 +15,27 @@ export enum LibraryFeature {
 export interface ILibrary {
     features: LibraryFeature[];
     getPlaylists(): Promise<Playlist[]>;
+    getFavoriteTracks(): Promise<ITrackRelation[]>;
 }
 
 @Service()
 export class Library implements ILibrary {
-    features = [LibraryFeature.playlists, LibraryFeature.edit_playlist, LibraryFeature.remove_playlist];
+    features = [
+        LibraryFeature.favorite_tracks,
+        LibraryFeature.playlists,
+        LibraryFeature.edit_playlist,
+        LibraryFeature.remove_playlist,
+    ];
     dataSource: DataSource;
     constructor(@DataBase() dataSource: DataSource) {
         this.dataSource = dataSource;
     }
-    async getPlaylists(): Promise<Playlist[]> {
+
+    getPlaylists() {
         return this.dataSource.getRepository(Playlist).find();
+    }
+
+    getFavoriteTracks() {
+        return this.dataSource.getRepository(FavoriteTrack).find();
     }
 }

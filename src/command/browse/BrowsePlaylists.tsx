@@ -1,20 +1,23 @@
 import QuickSearchInput, { Item } from "ink-search-select";
 import useStdoutDimensions from "ink-use-stdout-dimensions";
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
+import React, { FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Route, Switch, useNavigation } from "react-ink-commander";
+import { Loader } from "../../components";
 import { Playlist } from "../../db/entity";
-import { ILibrary } from "../../provider/Library";
 import { BrowsePlaylist } from "./BrowsePlaylist";
+import { LibraryContext } from "./LibraryContext";
 import { useBrowseCommands } from "./useBrowseCommands";
 
-interface Props {
-    library: ILibrary;
-}
+// interface Props {
 
-export const BrowsePlaylists: FC<Props> = ({ library }) => {
+// }
+
+export const BrowsePlaylists: FC = () => {
+    const library = useContext(LibraryContext);
+
     const { command, goBack, goToCommand } = useNavigation();
     const { playlist } = useBrowseCommands();
-    const [playlists, setPlaylists] = useState<Playlist[]>();
+    const [playlists, setPlaylists] = useState<Playlist[] | undefined>(undefined);
     const [selected, selectPlaylist] = useState<Playlist>();
 
     useEffect(() => {
@@ -25,8 +28,7 @@ export const BrowsePlaylists: FC<Props> = ({ library }) => {
     }, [library]);
 
     const items = useMemo(
-        () =>
-            Array.from(playlists?.entries() ?? []).map(([index, playlist]) => ({ value: index, label: playlist.Name })),
+        () => playlists?.map((playlist, index) => ({ value: index, label: `${index + 1}. ${playlist.Name}` })) ?? [],
         [playlists]
     );
 
@@ -47,22 +49,20 @@ export const BrowsePlaylists: FC<Props> = ({ library }) => {
         <Switch
             command={command}
             element={
-                <QuickSearchInput
-                    label="Search playlist"
-                    limit={Math.max(rows - 2, 1)}
-                    items={items}
-                    onSelect={handleSelect}
-                    onEscape={goBack}
-                />
+                playlists == undefined ? (
+                    <Loader label="Loading playlists" />
+                ) : (
+                    <QuickSearchInput
+                        label="Search playlist"
+                        limit={Math.max(rows - 2, 1)}
+                        items={items}
+                        onSelect={handleSelect}
+                        onEscape={goBack}
+                    />
+                )
             }
         >
-            {selected && (
-                <Route
-                    key="playlist"
-                    command={playlist}
-                    element={<BrowsePlaylist playlist={selected} library={library} />}
-                />
-            )}
+            {selected && <Route key="playlist" command={playlist} element={<BrowsePlaylist playlist={selected} />} />}
         </Switch>
     );
 };

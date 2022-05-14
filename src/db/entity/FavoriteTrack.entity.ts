@@ -1,8 +1,9 @@
 import { CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { ITrackRelation } from "./ITrackRelation";
 import { Track } from "./Track.entity";
 
 @Entity()
-export class FavoriteTrack {
+export class FavoriteTrack implements ITrackRelation {
     @PrimaryGeneratedColumn()
     Id!: number;
 
@@ -11,5 +12,5 @@ export class FavoriteTrack {
     Track!: Track;
 
     @CreateDateColumn()
-    CreatedAt!: Date;
+    AddedAt!: Date;
 }

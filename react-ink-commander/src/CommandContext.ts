@@ -6,6 +6,8 @@ export interface CommandState {
     command: Command;
     setName(path: string): void;
     parent?: CommandState;
+    navigationUpdated: React.DispatchWithoutAction;
+    updatesCounter: number;
 }
 
 export const CommandContext = createContext<CommandState>({} as never);

@@ -31,7 +31,8 @@ export function useNavigationCommandMenuItems() {
         }
 
         return result;
-    }, [commands]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [commands, commands.length]);
 }
 
 export function useCommandMenu<TCommands extends MenuCommand | string>(

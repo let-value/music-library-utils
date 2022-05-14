@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import React, { FC, ReactElement, useCallback, useMemo, useRef } from "react";
+import React, { FC, ReactElement, useCallback, useEffect, useMemo, useRef } from "react";
 import flattenChildren from "react-keyed-flatten-children";
 import { CommandContext } from "./CommandContext";
 import { ComponentWithCommand } from "./ComponentWithCommand";
@@ -25,7 +25,7 @@ const Switch: FC<SwitchProps> = ({ children, ...props }) => {
 
     const state = useChildCommand(command);
 
-    const { parent, name } = state;
+    const { parent, name, navigationUpdated } = state;
 
     const handleInvoke = useCallback(
         (activeCommand: Command) => {
@@ -35,13 +35,16 @@ const Switch: FC<SwitchProps> = ({ children, ...props }) => {
         [name]
     );
 
+    let navigationUpdates = 0;
+
     command = useMemo(() => {
         if (parent?.command && !parent?.command.commands.some((x) => x.name() == command.name())) {
             parent.command.addCommand(command);
+            navigationUpdates++;
         }
 
         return command.action(handleInvoke.bind(undefined, command));
-    }, [command, handleInvoke, parent?.command]);
+    }, [command, handleInvoke, navigationUpdates, parent]);
 
     const flatChildren = useMemo(() => flattenChildren(children) as Element[], [children]);
 
@@ -54,11 +57,18 @@ const Switch: FC<SwitchProps> = ({ children, ...props }) => {
 
             if (!command.commands.some((x) => x.name() == childCommand.name())) {
                 command.addCommand(childCommand);
+                navigationUpdates++;
             }
 
             childCommands.set(name, element);
         }
     }
+
+    useEffect(() => {
+        if (navigationUpdates > 0) {
+            navigationUpdated();
+        }
+    }, [navigationUpdated, navigationUpdates]);
 
     const parsed = useRef(false);
     if (!parsed.current) {

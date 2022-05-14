@@ -1,10 +1,11 @@
 import { CreateDateColumn, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { Album } from "./Album.entity";
+import { ITrackRelation } from "./ITrackRelation";
 import { Playlist } from "./Playlist.entity";
 import { Track } from "./Track.entity";
 
 @Entity()
-export class PlaylistToTrack {
+export class PlaylistToTrack implements ITrackRelation {
     @PrimaryColumn()
     Order!: number;
 
@@ -26,11 +27,11 @@ export class PlaylistToTrack {
     @ManyToOne(() => Track, (track) => track.Playlists, { eager: true })
     Track!: Track;
 
-    @ManyToOne(() => Album, { eager: true })
-    Album?: Album;
-
     @CreateDateColumn()
     AddedAt!: Date;
+
+    @ManyToOne(() => Album, { eager: true })
+    Album?: Album;
 
     constructor(params?: Partial<PlaylistToTrack>) {
         Object.assign(this, params);

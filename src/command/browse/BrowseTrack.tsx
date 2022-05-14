@@ -4,23 +4,22 @@ import SelectInput from "ink-select-input";
 import { Item } from "ink-select-input/build/SelectInput";
 import React, { FC, useCallback, useContext, useMemo } from "react";
 import { Route, Switch, useNavigation } from "react-ink-commander";
-import { MenuCommand, useCommandMenu, useNavigationCommandMenuItems } from "../../components";
-import { Playlist } from "../../db/entity";
+import { MenuCommand, TrackName, useCommandMenu, useNavigationCommandMenuItems } from "../../components";
+import { Track } from "../../db/entity";
 import { LibraryFeature } from "../../provider/Library";
-import { BrowseTracks } from "./BrowseTracks";
 import { LibraryContext } from "./LibraryContext";
 import { useBrowseCommands } from "./useBrowseCommands";
 
 interface Props {
-    playlist: Playlist;
+    track: Track;
 }
 
-type Commands = MenuCommand | "import" | "rename" | "remove";
+type Commands = MenuCommand | "import" | "remove";
 
-export const BrowsePlaylist: FC<Props> = ({ playlist }) => {
+export const BrowseTrack: FC<Props> = ({ track }) => {
     const library = useContext(LibraryContext);
     const { command } = useNavigation();
-    const { trackList } = useBrowseCommands();
+    const { artist, album } = useBrowseCommands();
 
     const navItems = useNavigationCommandMenuItems();
     const menuItems = useMemo(() => {
@@ -30,13 +29,6 @@ export const BrowsePlaylist: FC<Props> = ({ playlist }) => {
                 key: "import",
                 label: "import",
                 value: "import",
-            });
-        }
-        if (library.features.includes(LibraryFeature.edit_playlist)) {
-            result.push({
-                key: "rename",
-                label: "rename",
-                value: "rename",
             });
         }
         if (library.features.includes(LibraryFeature.remove_playlist)) {
@@ -61,12 +53,15 @@ export const BrowsePlaylist: FC<Props> = ({ playlist }) => {
             command={command}
             element={
                 <Box flexDirection="column">
-                    <Text>Playlist: {playlist.Name}</Text>
+                    <Text>
+                        Track: <TrackName track={track} />
+                    </Text>
                     <SelectInput items={items} onSelect={handleSelect} />
                 </Box>
             }
         >
-            <Route key="tracks" command={trackList} element={<BrowseTracks source={() => playlist.Tracks} />} />
+            <Route key="artist" command={artist} element={<Text>artist</Text>} />
+            <Route key="album" command={album} element={<Text>album</Text>} />
         </Switch>
     );
 };
